@@ -86,7 +86,6 @@ markers = [
 required_plugins = [
     "pytest-randomly",
     "pytest-cov",
-    "pytest-sugar",
 ]
 
 testpaths = "tests"
