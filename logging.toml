@@ -25,6 +25,6 @@ handlers = ["devHandler",]
 propagate = false
 
 [loggers.production]
-level = "DEBUG"
+level = "INFO"
 handlers = ["prodHandler",]
 propagate = false
