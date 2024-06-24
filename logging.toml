@@ -3,7 +3,7 @@ version = 1
 disable_existing_loggers = true
 
 [formatters.coreFormatter]
-format = "%(asctime)s - [%(levelname)s] - %(pathname)s - %(lineno)d - %(message)s - Thread: %(thread)d - Process: %(process)d"
+format = "%(asctime)s - [%(levelname)s] - %(pathname)s - Line: %(lineno)d - Message: %(message)s - Thread: %(thread)d - Process: %(process)d"
 datefmt = "%Y-%m-%d %H:%M:%S"
 
 [handlers.devHandler]
