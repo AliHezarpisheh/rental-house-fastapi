@@ -1,0 +1,44 @@
+[openapi]
+title = "Rental House Management API"
+version = "1.0.0"
+description = """
+The Rental House Management API provides endpoints for users and authentication, comprehensive
+property and booking management, payment integrations, property searching, notifications, reviews,
+and ratings.
+"""
+
+[openapi.contact]
+name = "Rental House API Support Team"
+email = "alihezarpisheh@outlook.com"
+
+[openapi.license]
+name = "MIT License"
+url = "https://opensource.org/licenses/MIT"
+
+[[openapi.tags]]
+name = "Users"
+description = "Operations related to user management, including registration, authentication, and profile management."
+
+[[openapi.tags]]
+name = "Properties"
+description = "Operations related to property management, including adding, updating, and deleting rental properties."
+
+[[openapi.tags]]
+name = "Bookings"
+description = "Operations related to booking management, including creating, updating, and canceling bookings."
+
+[[openapi.tags]]
+name = "Payments"
+description = "Operations related to payment processing, including integration with payment gateways and handling transactions."
+
+[[openapi.tags]]
+name = "Search"
+description = "Operations related to searching for properties based on various criteria such as location, price, and availability."
+
+[[openapi.tags]]
+name = "Notifications"
+description = "Operations related to managing notifications, including sending alerts to users about booking status and promotions."
+
+[[openapi.tags]]
+name = "Reviews"
+description = "Operations related to managing reviews and ratings for properties, including adding, updating, and deleting reviews."
