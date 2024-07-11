@@ -1,4 +1,3 @@
-# Sample loggin configuration.
 version = 1
 disable_existing_loggers = true
 
