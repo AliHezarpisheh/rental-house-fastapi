@@ -1,0 +1,42 @@
+Project rental_house_fastapi {
+  database: 'PostgreSQL'
+  Note: 'Backend for a rental house application using FastAPI.'
+}
+
+
+/////////////////////////
+//    Account App     //
+///////////////////////
+
+
+TableGroup account {
+  account.users
+  account.profiles
+}
+
+Table account.users {
+    id               int           [pk, increment, note: 'Primary key']
+    username         varchar(255)  [unique, not null, note: 'Unique username']
+    email            varchar(255)  [unique, not null, note: 'Unique email address']
+    hashed_password  varchar(255)  [not null, note: 'Hashed password']
+    is_active        boolean       [default: true, note: 'Indicates if the user is active']
+    is_verified      boolean       [default: false, note: 'Indicates if the user is verified']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+    updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
+
+    Note: 'Table to store user credentials and status'
+}
+
+Table account.profiles {
+    id               int           [pk, increment, note: 'Primary key']
+    user_id          int           [ref: > account.users.id, unique, note: 'Foreign key referencing users table']
+    full_name        varchar(255)  [note: 'Full name of the user']
+    bio              text          [note: 'Short biography of the user']
+    avatar_url       varchar(255)  [note: 'URL to the user\'s avatar']
+    location         varchar(255)  [note: 'Location of the user']
+    birthdate        date          [note: 'Birthdate of the user']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+    updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
+
+    Note: 'Table to store additional user profile information'
+}
