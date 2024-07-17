@@ -1,40 +1,42 @@
 """Module for defining base database configurations."""
 
-from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from config.settings import settings
 
 
-class DatabaseConnection:
-    """Class for managing database connections."""
+class AsyncDatabaseConnection:
+    """Class for managing async database connections."""
 
     def __init__(self) -> None:
-        """Initialize DatabaseConnection with the specified configuration path."""
-        self._engine: Engine | None = None
+        """Initialize AsyncDatabaseConnection with the specified configuration path."""
+        self._engine: AsyncEngine | None = None
 
-    def get_engine(self) -> Engine:
+    def get_engine(self) -> AsyncEngine:
         """
-        Get the database engine.
+        Get the async database engine.
 
         Returns
         -------
-        sqlalchemy.engine.Engine
-            The database engine object.
+        sqlalchemy.ext.asyncio.AsyncEngine
+            The async database engine object.
         """
         if not self._engine:
-            self._engine = create_engine(settings.database_url)
+            self._engine = create_async_engine(settings.database_url)
         return self._engine
 
-    def get_session(self) -> scoped_session[Session]:
+    def get_session(self) -> scoped_session:
         """
-        Get a scoped database session.
+        Get a scoped async database session.
 
         Returns
         -------
-        sqlalchemy.orm.scoped_session[Session]
-            A scoped session object.
+        sqlalchemy.orm.scoped_session
+            A scoped async session object.
         """
         engine = self.get_engine()
-        Session = sessionmaker(bind=engine)
-        return scoped_session(Session)
+        async_session = sessionmaker(
+            bind=engine, class_=AsyncSession, expire_on_commit=False
+        )
+        return scoped_session(async_session)
