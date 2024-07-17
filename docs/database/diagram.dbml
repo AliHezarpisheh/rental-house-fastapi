@@ -9,12 +9,16 @@ Project rental_house_fastapi {
 ///////////////////////
 
 
-TableGroup account {
-  account.users
-  account.profiles
+TableGroup auth {
+  auth.users
+  auth.profiles
+  auth.roles
+  auth.user_roles
+  auth.permissions
+  auth.role_permissions
 }
 
-Table account.users {
+Table auth.users {
     id               int           [pk, increment, note: 'Primary key']
     username         varchar(255)  [unique, not null, note: 'Unique username']
     email            varchar(255)  [unique, not null, note: 'Unique email address']
@@ -27,16 +31,76 @@ Table account.users {
     Note: 'Table to store user credentials and status'
 }
 
-Table account.profiles {
+Table auth.profiles {
     id               int           [pk, increment, note: 'Primary key']
-    user_id          int           [ref: > account.users.id, unique, note: 'Foreign key referencing users table']
-    full_name        varchar(255)  [note: 'Full name of the user']
-    bio              text          [note: 'Short biography of the user']
-    avatar_url       varchar(255)  [note: 'URL to the user\'s avatar']
-    location         varchar(255)  [note: 'Location of the user']
-    birthdate        date          [note: 'Birthdate of the user']
+    user_id          int           [ref: - auth.users.id, unique, note: 'Foreign key referencing users table']
+    full_name        varchar(255)  [null, note: 'Full name of the user']
+    bio              text          [null, note: 'Short biography of the user']
+    avatar_url       varchar(255)  [null, note: 'URL to the user\'s avatar']
+    location         varchar(255)  [null, note: 'Location of the user']
+    birthdate        date          [null, note: 'Birthdate of the user']
     created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
     updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
 
     Note: 'Table to store additional user profile information'
+}
+
+Table auth.roles {
+    id               int           [pk, increment, note: 'Primary key']
+    name             varchar(50)   [unique, not null, note: 'Role name (e.g., admin, user, moderator)']
+    description      text          [note: 'Description of the role']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+    updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
+
+    Note: 'Table to store user roles'
+}
+
+Table auth.user_roles {
+    id               int           [pk, increment, note: 'Primary key']
+    user_id          int           [ref: > auth.users.id, note: 'Foreign key referencing users table']
+    role_id          int           [ref: > auth.roles.id, note: 'Foreign key referencing roles table']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+
+    Note: 'Table to assign roles to users'
+}
+
+Table auth.permissions {
+    id               int           [pk, increment, note: 'Primary key']
+    name             varchar(50)   [unique, not null, note: 'Permission name (e.g., read, write, delete)']
+    description      text          [note: 'Description of the permission']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+    updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
+
+    Note: 'Table to store permissions'
+}
+
+Table auth.role_permissions {
+    id               int           [pk, increment, note: 'Primary key']
+    role_id          int           [ref: > auth.roles.id, note: 'Foreign key referencing roles table']
+    permission_id    int           [ref: > auth.permissions.id, note: 'Foreign key referencing permissions table']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+
+    Note: 'Table to assign permissions to roles'
+}
+
+Table auth.tokens {
+    id               int           [pk, increment, note: 'Primary key']
+    user_id          int           [ref: > auth.users.id, note: 'Foreign key referencing users table']
+    refresh_token    varchar(255)  [unique, not null, note: 'Refresh token for the user']
+    expires_at       timestamp     [not null, note: 'Expiration time of the refresh token']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
+    updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
+
+    Note: 'Table to store JWT refresh tokens'
+}
+
+Table auth.activity_logs {
+    id               int           [pk, increment, note: 'Primary key']
+    user_id          int           [ref: > auth.users.id, note: 'Foreign key referencing users table']
+    action           varchar(255)  [not null, note: 'Description of the action performed']
+    ip_address       varchar(45)   [note: 'IP address from where the action was performed']
+    user_agent       text          [note: 'User agent string of the client']
+    created_at       timestamp     [default: `current_timestamp`, note: 'Timestamp of the action']
+
+    Note: 'Table to store logs of user activities'
 }
