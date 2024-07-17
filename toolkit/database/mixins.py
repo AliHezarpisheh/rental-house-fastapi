@@ -1,25 +1,34 @@
 """Contains database mixins for common functionalities."""
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 
 
 class IdMixin:
     """Mixin class providing an auto-incrementing integer primary key attribute."""
 
     id: Mapped[int] = mapped_column(
-        primary_key=True, autoincrement=True, nullable=False
+        primary_key=True,
+        autoincrement=True,
+        nullable=False,
+        comment="Auto-incrementing primary key",
     )
 
 
 class TimestampMixin:
     """A mixin class to add created_at and modified_at timestamp fields."""
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
-    modified_at: Mapped[Optional[datetime]] = mapped_column(
-        default=None, nullable=True, onupdate=datetime.now(timezone.utc)
+    created_at: Mapped[datetime] = mapped_column(
+        default=func.now(),
+        comment="Timestamp when the record was created",
+    )
+    modified_at: Mapped[datetime | None] = mapped_column(
+        default=None,
+        nullable=True,
+        onupdate=func.now(),
+        comment="Timestamp when the record was last modified",
     )
 
 
