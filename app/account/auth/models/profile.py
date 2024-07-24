@@ -49,9 +49,10 @@ class Profile(CommonMixin, Base):
         ForeignKey("account__auth__user.id"),
         primary_key=True,
         nullable=False,
+        unique=True,
         comment="Foreign key referencing users table",
     )
-    user: Mapped[User] = relationship("User", backref="profile")
+    user: Mapped[User] = relationship("User", backref="profile", uselist=False)
 
     def __str__(self) -> str:
         """Return a string representation of the Profile object."""

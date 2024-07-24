@@ -1,10 +1,17 @@
 """Module containing model definitions for User."""
 
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from config.database.annotations import str255
 from config.database.orm import Base
 from toolkit.database.mixins import CommonMixin
+
+if TYPE_CHECKING:
+    from .role import Role
+else:
+    Role = "Role"
 
 
 class User(CommonMixin, Base):
@@ -14,12 +21,12 @@ class User(CommonMixin, Base):
 
     # Columns
     username: Mapped[str255] = mapped_column(
-        unique=False,
+        unique=True,
         nullable=False,
         comment="Unique username.",
     )
     email: Mapped[str255] = mapped_column(
-        unique=False,
+        unique=True,
         nullable=False,
         comment="Unique email address.",
     )
@@ -33,6 +40,12 @@ class User(CommonMixin, Base):
     is_verified: Mapped[bool] = mapped_column(
         default=False,
         comment="Indicates if the user is verified",
+    )
+
+    # Relationships
+    roles: Mapped[list[Role]] = relationship(
+        secondary="account__auth__user_role",
+        backref="users",
     )
 
     def __str__(self) -> str:

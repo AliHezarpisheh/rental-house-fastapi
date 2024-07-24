@@ -14,6 +14,7 @@ class Role(CommonMixin, Base):
 
     __tablename__ = "account__auth__role"
 
+    # Columns
     name: Mapped[str64] = mapped_column(
         nullable=False, unique=True, comment="Role name (e.g., admin, user, moderator)"
     )
