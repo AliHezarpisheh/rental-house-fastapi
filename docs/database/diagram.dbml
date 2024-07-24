@@ -47,7 +47,7 @@ Table auth.profile {
 
 Table auth.role {
     id               int           [pk, increment, note: 'Primary key']
-    name             varchar(50)   [unique, not null, note: 'Role name (e.g., admin, user, moderator)']
+    name             varchar(63)   [unique, not null, note: 'Role name (e.g., admin, user, moderator)']
     description      text          [note: 'Description of the role']
     created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
     updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
@@ -66,7 +66,7 @@ Table auth.user_role {
 
 Table auth.permission {
     id               int           [pk, increment, note: 'Primary key']
-    name             varchar(50)   [unique, not null, note: 'Permission name (e.g., read, write, delete)']
+    name             varchar(63)   [unique, not null, note: 'Permission name (e.g., read, write, delete)']
     description      text          [note: 'Description of the permission']
     created_at       timestamp     [default: `current_timestamp`, note: 'Record creation timestamp']
     updated_at       timestamp     [default: `current_timestamp`, note: 'Record update timestamp']
