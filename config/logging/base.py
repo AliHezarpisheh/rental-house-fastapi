@@ -6,6 +6,8 @@ import logging.handlers
 from pathlib import Path
 from typing import Any
 
+import coloredlogs
+
 from toolkit.parsers import TOMLParser
 
 from ..settings import settings
@@ -42,6 +44,9 @@ class LoggingConfig:
             logging_config["loggers"][""] = logger_config
 
         logging.config.dictConfig(logging_config)
+
+        # Set up coloredlogs
+        coloredlogs.install(level="DEBUG", logger=self._logger)
 
         # Set the logger object.
         self._logger = logging.getLogger()
