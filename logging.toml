@@ -20,10 +20,25 @@ formatter = "coreFormatter"
 
 [loggers.development]
 level = "DEBUG"
-handlers = ["devHandler",]
-propagate = false
+handlers = ["devHandler"]
+propagate = true
 
 [loggers.production]
 level = "INFO"
-handlers = ["prodHandler",]
-propagate = false
+handlers = ["prodHandler"]
+propagate = true
+
+[loggers.uvicorn]
+level = "DEBUG"
+handlers = ["devHandler"]
+propagate = true
+
+[loggers.uvicorn.error]
+level = "DEBUG"
+handlers = ["devHandler"]
+propagate = true
+
+[loggers.uvicorn.access]
+level = "DEBUG"
+handlers = ["devHandler"]
+propagate = true
