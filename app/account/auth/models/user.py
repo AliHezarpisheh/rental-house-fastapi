@@ -2,9 +2,9 @@
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from toolkit.database.annotations import str255
+from config.database.annotations import str255
+from config.database.orm import Base
 from toolkit.database.mixins import CommonMixin
-from toolkit.database.orm import Base
 
 
 class User(CommonMixin, Base):

@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from toolkit.database.annotations import str255, text
+from config.database.annotations import str255, text
+from config.database.orm import Base
 from toolkit.database.mixins import CommonMixin
-from toolkit.database.orm import Base
 
 if TYPE_CHECKING:
     from app.account.auth.models.user import User  # pragma: no cover
@@ -59,4 +59,4 @@ class Profile(CommonMixin, Base):
 
     def __repr__(self) -> str:
         """Return a human-readable string representation of the Profile object."""
-        return f"Profile({self.full_name}, User ID: {self.user_id})"
+        return f"Profile(full_name={self.full_name}, user_id={self.user_id})"

@@ -1,7 +1,18 @@
 """Module for defining base database configurations."""
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from __future__ import annotations
+
+from asyncio import current_task
+
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_scoped_session,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from config.settings import settings
 
@@ -10,8 +21,9 @@ class AsyncDatabaseConnection:
     """Class for managing async database connections."""
 
     def __init__(self) -> None:
-        """Initialize AsyncDatabaseConnection with the specified configuration path."""
+        """Initialize AsyncDatabaseConnection."""
         self._engine: AsyncEngine | None = None
+        self._session_factory: async_sessionmaker[AsyncSession] | None = None
 
     def get_engine(self) -> AsyncEngine:
         """
@@ -26,17 +38,52 @@ class AsyncDatabaseConnection:
             self._engine = create_async_engine(settings.database_url)
         return self._engine
 
-    def get_session(self) -> scoped_session:
+    def get_session_factory(self) -> async_sessionmaker[AsyncSession]:
+        """
+        Get the session factory.
+
+        Returns
+        -------
+        sqlalchemy.ext.asyncio.async_sessionmaker
+            The session factory.
+        """
+        if not self._session_factory:
+            engine = self.get_engine()
+            self._session_factory = async_sessionmaker(
+                bind=engine, expire_on_commit=False
+            )
+        return self._session_factory
+
+    def get_session(self) -> async_scoped_session[AsyncSession]:
         """
         Get a scoped async database session.
 
         Returns
         -------
-        sqlalchemy.orm.scoped_session
+        sqlalchemy.ext.asyncio.async_scoped_session
             A scoped async session object.
         """
-        engine = self.get_engine()
-        async_session = sessionmaker(
-            bind=engine, class_=AsyncSession, expire_on_commit=False
-        )
-        return scoped_session(async_session)
+        session = self.get_session_factory()
+        return async_scoped_session(session, scopefunc=current_task)
+
+    async def close_engine(self) -> None:
+        """Close the async database engine."""
+        if self._engine:
+            await self._engine.dispose()
+
+    async def test_connection(self) -> bool:
+        """
+        Test the database connection.
+
+        Returns
+        -------
+        bool
+            True if the connection is successful, False otherwise.
+        """
+        try:
+            engine = self.get_engine()
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            return True
+        except SQLAlchemyError:
+            return False
