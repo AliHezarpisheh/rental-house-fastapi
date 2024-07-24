@@ -27,7 +27,7 @@ app = FastAPI(
 
 
 # Health-Check Endpoint
-@app.get("/health")
+@app.get("/health", tags=["Health Check"])
 def get_health() -> dict[str, str]:
     """Router for health-check of the application."""
     return {"status": "OK"}
