@@ -94,7 +94,7 @@ Table auth.token {
     Note: 'Table to store JWT refresh tokens'
 }
 
-Table auth.activity_logs {
+Table auth.activity_log {
     id               int           [pk, increment, note: 'Primary key']
     user_id          int           [ref: > auth.user.id, note: 'Foreign key referencing users table']
     action           varchar(255)  [not null, note: 'Description of the action performed']
