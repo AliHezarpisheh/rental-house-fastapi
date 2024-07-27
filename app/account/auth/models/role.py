@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from config.database.annotations import str64, text
 from config.database.orm import Base
 from toolkit.database.mixins import CommonMixin
+
+if TYPE_CHECKING:
+    from .permission import Permission
+else:
+    Permission = "Permission"
 
 
 class Role(CommonMixin, Base):
@@ -21,6 +28,12 @@ class Role(CommonMixin, Base):
     description: Mapped[text] = mapped_column(
         nullable=False,
         comment="Description of the role",
+    )
+
+    # Relationships
+    permissions: Mapped[list[Permission]] = relationship(
+        secondary="account__auth__role_permission",
+        backref="roles",
     )
 
     def __str__(self) -> str:

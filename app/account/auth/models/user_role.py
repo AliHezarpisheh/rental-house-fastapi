@@ -18,25 +18,25 @@ else:
 
 
 class UserRole(IdMixin, Base):
-    """Model class representing ..."""
+    """Model class representing the association between users and roles."""
 
     __tablename__ = "account__auth__user_role"
 
     # Columns
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("account__auth__user"),
+        ForeignKey("account__auth__user.id"),
         primary_key=True,
         nullable=False,
         comment="Foreign key referencing users table",
     )
     role_id: Mapped[int] = mapped_column(
-        ForeignKey("account__auth__role"),
+        ForeignKey("account__auth__role.id"),
         primary_key=True,
         nullable=False,
         comment="Foreign key referencing roles table",
     )
     created_at: Mapped[datetime] = mapped_column(
-        default=func.now(),
+        server_default=func.now(),
         comment="Timestamp when the record was created",
     )
 

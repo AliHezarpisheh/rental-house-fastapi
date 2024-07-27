@@ -9,9 +9,13 @@ from config.database.orm import Base
 from toolkit.database.mixins import CommonMixin
 
 if TYPE_CHECKING:
+    from .activity_log import ActivityLog
     from .role import Role
+    from .token import Token
 else:
     Role = "Role"
+    Token = "Token"
+    ActivityLog = "ActivityLog"
 
 
 class User(CommonMixin, Base):
@@ -45,6 +49,12 @@ class User(CommonMixin, Base):
     # Relationships
     roles: Mapped[list[Role]] = relationship(
         secondary="account__auth__user_role",
+        backref="users",
+    )
+    token: Mapped[list[Token]] = relationship(
+        backref="users",
+    )
+    activity_logs: Mapped[list[ActivityLog]] = relationship(
         backref="users",
     )
 
