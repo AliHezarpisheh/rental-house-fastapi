@@ -21,7 +21,7 @@ class TimestampMixin:
     """A mixin class to add created_at and modified_at timestamp fields."""
 
     created_at: Mapped[datetime] = mapped_column(
-        default=func.now(),
+        server_default=func.now(),
         comment="Timestamp when the record was created",
     )
     modified_at: Mapped[datetime | None] = mapped_column(
