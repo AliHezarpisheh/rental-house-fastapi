@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from config.database.annotations import str64, text
@@ -20,6 +21,7 @@ class Role(CommonMixin, Base):
     """Model class representing user roles."""
 
     __tablename__ = "account__auth__role"
+    __table_args__ = (Index("ix_role_name", "name"),)
 
     # Columns
     name: Mapped[str64] = mapped_column(

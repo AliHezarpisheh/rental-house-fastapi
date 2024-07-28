@@ -27,14 +27,17 @@ class ActivityLog(IdMixin, Base):
         comment="Description of the action performed",
     )
     ip_address: Mapped[str] = mapped_column(
+        nullable=False,
         comment="IP address from where the action was performed",
     )
-    user_agent: Mapped[text] = mapped_column(
+    user_agent: Mapped[text | None] = mapped_column(
         nullable=True,
         comment="User agent string of the client",
     )
     created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), comment="Timestamp when the record was created"
+        nullable=False,
+        server_default=func.now(),
+        comment="Timestamp when the record was created",
     )
 
     def __str__(self) -> str:

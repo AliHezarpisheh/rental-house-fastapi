@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Index, sql
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from config.database.annotations import str255
@@ -21,7 +22,12 @@ else:
 class User(CommonMixin, Base):
     """Represents a user in the authentication system."""
 
+    # Table Configurations
     __tablename__ = "account__auth__user"
+    __table_args__ = (
+        Index("ix_user_username", "username"),
+        Index("ix_user_email", "email"),
+    )
 
     # Columns
     username: Mapped[str255] = mapped_column(
@@ -38,11 +44,15 @@ class User(CommonMixin, Base):
         nullable=False, comment="Hashed password."
     )
     is_active: Mapped[bool] = mapped_column(
+        nullable=False,
         default=True,
+        server_default=sql.false(),
         comment="Indicates if the user is active",
     )
     is_verified: Mapped[bool] = mapped_column(
+        nullable=False,
         default=False,
+        server_default=sql.false(),
         comment="Indicates if the user is verified",
     )
 

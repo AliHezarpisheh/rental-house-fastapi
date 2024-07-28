@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from config.database.orm import Base
@@ -20,7 +20,9 @@ else:
 class UserRole(IdMixin, Base):
     """Model class representing the association between users and roles."""
 
+    # Table Configurations
     __tablename__ = "account__auth__user_role"
+    __table_args__ = (UniqueConstraint("user_id", "role_id", name="uq_user_role"),)
 
     # Columns
     user_id: Mapped[int] = mapped_column(
@@ -36,6 +38,7 @@ class UserRole(IdMixin, Base):
         comment="Foreign key referencing roles table",
     )
     created_at: Mapped[datetime] = mapped_column(
+        nullable=False,
         server_default=func.now(),
         comment="Timestamp when the record was created",
     )
