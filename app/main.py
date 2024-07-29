@@ -8,6 +8,7 @@ manager, and defines routes for handling various HTTP requests.
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
+from app.account.auth.api.routers.user import router as users_router
 from config.settings import settings
 from config.settings.openapi import responses
 from toolkit.api.exceptions import (
@@ -57,4 +58,5 @@ app.add_exception_handler(
 )
 
 # Include routers
+app.include_router(users_router)
 app.include_router(health_check_router)
