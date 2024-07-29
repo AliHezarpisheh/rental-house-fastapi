@@ -42,3 +42,7 @@ description = "Operations related to managing notifications, including sending a
 [[openapi.tags]]
 name = "Reviews"
 description = "Operations related to managing reviews and ratings for properties, including adding, updating, and deleting reviews."
+
+[[openapi.tags]]
+name = "Health Check"
+description = "A simple endpoint to check if the API is up and running."
