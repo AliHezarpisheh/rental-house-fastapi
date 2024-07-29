@@ -44,7 +44,7 @@ class User(CommonMixin, Base):
         nullable=False, comment="Hashed password."
     )
     is_active: Mapped[bool] = mapped_column(
-        nullable=False,
+        nullable=True,
         default=True,
         server_default=sql.false(),
         comment="Indicates if the user is active",
