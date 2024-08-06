@@ -12,16 +12,18 @@ from app.account.auth.api.routers.user import router as users_router
 from config.settings import settings
 from config.settings.openapi import responses
 from toolkit.api.exceptions import (
-    BaseTokenError,
     CustomHTTPException,
     DoesNotExistError,
+    DuplicateResourceError,
+    TokenError,
 )
 
 from .exception_handlers import (
-    base_token_error_handler,
     custom_http_exception_handler,
     does_not_exist_exception_handler,
+    duplicate_resource_error_handler,
     request_validation_exception_handler,
+    token_error_handler,
 )
 from .healthcheck import router as health_check_router
 from .lifespan import lifespan
@@ -53,8 +55,12 @@ app.add_exception_handler(
     does_not_exist_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
-    BaseTokenError,
-    base_token_error_handler,  # type: ignore
+    TokenError,
+    token_error_handler,  # type: ignore
+)
+app.add_exception_handler(
+    DuplicateResourceError,
+    duplicate_resource_error_handler,  # type: ignore
 )
 
 # Include routers

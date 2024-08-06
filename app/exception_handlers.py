@@ -8,9 +8,10 @@ from fastapi.responses import JSONResponse
 
 from toolkit.api.enums import HTTPStatusDoc, Status
 from toolkit.api.exceptions import (
-    BaseTokenError,
     CustomHTTPException,
     DoesNotExistError,
+    DuplicateResourceError,
+    TokenError,
 )
 
 logger = logging.getLogger(__name__)
@@ -118,12 +119,12 @@ async def does_not_exist_exception_handler(
     )
 
 
-async def base_token_error_handler(request: Request, exc: BaseTokenError) -> None:
+async def token_error_handler(request: Request, exc: TokenError) -> None:
     """
-    Handle BaseTokenError by raising a CustomHTTPException with details.
+    Handle TokenError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    BaseTokenError exceptions raised within FastAPI routes.
+    TokenError exceptions raised within FastAPI routes.
     It raises a CustomHTTPException with a status code of 401 (Unauthorized)
     and includes details such as the error message, reason, affected field,
     and a documentation link.
@@ -132,8 +133,8 @@ async def base_token_error_handler(request: Request, exc: BaseTokenError) -> Non
     ----------
     request : Request
         The incoming request object.
-    exc : BaseTokenError
-        The instance of BaseTokenError raised.
+    exc : TokenError
+        The instance of TokenError raised.
 
     Raises
     ------
@@ -146,4 +147,37 @@ async def base_token_error_handler(request: Request, exc: BaseTokenError) -> Non
         status=Status.FORBIDDEN,
         message=str(exc),
         documentation_link=HTTPStatusDoc.STATUS_403,
+    )
+
+
+async def duplicate_resource_error_handler(
+    request: Request, exc: DuplicateResourceError
+) -> None:
+    """
+    Handle DuplicateResourceError by raising a CustomHTTPException with details.
+
+    This function is an exception handler specifically designed to handle
+    DuplicateResourceError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of 409 (Conflict)
+    and includes details such as the error message, reason, affected field,
+    and a documentation link.
+
+    Parameters
+    ----------
+    request : Request
+        The incoming request object.
+    exc : DuplicateResourceError
+        The instance of DuplicateResourceError raised.
+
+    Raises
+    ------
+    CustomHTTPException
+        Always raises a CustomHTTPException with a status code of 409 (Conflict).
+    """
+    logger.error("Duplicate resource error occurred. Error details: %s", exc)
+    raise CustomHTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        status=Status.CONFLICT,
+        message=str(exc),
+        documentation_link=HTTPStatusDoc.STATUS_409,
     )
