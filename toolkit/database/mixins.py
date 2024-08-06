@@ -22,6 +22,7 @@ class TimestampMixin:
 
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
+        nullable=False,
         comment="Timestamp when the record was created",
     )
     modified_at: Mapped[datetime | None] = mapped_column(
