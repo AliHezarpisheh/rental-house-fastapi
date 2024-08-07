@@ -23,7 +23,14 @@ class UserDataAccessLayer:
     """Data access layer for user related operations."""
 
     def __init__(self, db_session: async_scoped_session[AsyncSession]) -> None:
-        """Initialize the UserDataAccessLayer."""
+        """
+        Initialize the UserDataAccessLayer.
+
+        Parameters
+        ----------
+        db_session : async_scoped_session[AsyncSession]
+            The database session for asynchronous operations.
+        """
         self.db_session = db_session
 
     async def create_user(self, user_input: UserInput, hashed_password: str) -> User:
