@@ -1,10 +1,11 @@
 """Module for defining base configurations."""
 
 from .database.base import AsyncDatabaseConnection
-from .logging.base import LoggingConfig
+from .logging import LoggingConfig
+from .settings import settings
 
 # Database
 db = AsyncDatabaseConnection()
 
 # Logging
-logger = LoggingConfig().get_logger()
+logger = LoggingConfig().get_logger(settings.env)
