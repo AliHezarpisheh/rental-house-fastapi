@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from config.database.orm import Base
 from toolkit.database.mixins import IdMixin
+from toolkit.database.orm import Base
 
 if TYPE_CHECKING:
     from .role import Role  # pragma: no cover

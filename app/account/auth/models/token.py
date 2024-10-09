@@ -5,9 +5,9 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from config.database.annotations import str255
-from config.database.orm import Base
+from toolkit.database.annotations import str255
 from toolkit.database.mixins import CommonMixin
+from toolkit.database.orm import Base
 
 
 class Token(CommonMixin, Base):

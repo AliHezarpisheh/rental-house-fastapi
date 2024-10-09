@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Index, sql
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from config.database.annotations import str255
-from config.database.orm import Base
+from toolkit.database.annotations import str255
 from toolkit.database.mixins import CommonMixin
+from toolkit.database.orm import Base
 
 if TYPE_CHECKING:
     from .activity_log import ActivityLog

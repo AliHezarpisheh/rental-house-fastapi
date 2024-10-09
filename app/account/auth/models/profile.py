@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from config.database.annotations import str255, text
-from config.database.orm import Base
+from toolkit.database.annotations import str255, text
 from toolkit.database.mixins import CommonMixin
+from toolkit.database.orm import Base
 
 if TYPE_CHECKING:
     from app.account.auth.models.user import User  # pragma: no cover

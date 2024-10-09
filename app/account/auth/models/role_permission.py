@@ -5,8 +5,8 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from config.database.orm import Base
 from toolkit.database.mixins import IdMixin
+from toolkit.database.orm import Base
 
 
 class RolePermission(IdMixin, Base):

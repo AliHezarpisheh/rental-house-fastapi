@@ -1,9 +1,9 @@
 """Module for configuring logging settings."""
 
-import os
 import logging
 import logging.config
 import logging.handlers
+import os
 from pathlib import Path
 from typing import Any
 
@@ -41,7 +41,9 @@ class RelativePathFilter:
 class LoggingConfig:
     """Class for configuring logging settings based on a specified config file."""
 
-    def __init__(self, environment: str = "development", config_path: str = "settings.toml") -> None:
+    def __init__(
+        self, environment: str = "development", config_path: str = "settings.toml"
+    ) -> None:
         self._env = environment
         self._parser = TOMLParser(file_path=config_path)
         self._logger: logging.Logger | None = None

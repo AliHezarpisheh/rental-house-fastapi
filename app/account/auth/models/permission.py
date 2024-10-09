@@ -2,9 +2,9 @@
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from config.database.annotations import str64, text
-from config.database.orm import Base
+from toolkit.database.annotations import str64, text
 from toolkit.database.mixins import CommonMixin
+from toolkit.database.orm import Base
 
 
 class Permission(CommonMixin, Base):

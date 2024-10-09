@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
 from app.account.auth.api.routers.user import router as users_router
-from config.settings import settings
+from config.base import settings
 from config.settings.openapi import responses
 from toolkit.api.exceptions import (
     CustomHTTPException,

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from app.account.auth.models import *  # noqa: F403
 from config.base import db, logger
-from config.database.orm import Base
+from toolkit.database.orm import Base
 
 
 @asynccontextmanager
