@@ -14,14 +14,13 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from config.settings import settings
-
 
 class AsyncDatabaseConnection:
     """Class for managing async database connections."""
 
-    def __init__(self) -> None:
+    def __init__(self, database_url: str) -> None:
         """Initialize AsyncDatabaseConnection."""
+        self._database_url = database_url
         self._engine: AsyncEngine | None = None
         self._session_factory: async_sessionmaker[AsyncSession] | None = None
 
@@ -35,7 +34,7 @@ class AsyncDatabaseConnection:
             The async database engine object.
         """
         if not self._engine:
-            self._engine = create_async_engine(settings.database_url)
+            self._engine = create_async_engine(self._database_url)
         return self._engine
 
     def get_session_factory(self) -> async_sessionmaker[AsyncSession]:
