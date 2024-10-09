@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     # Settings config
     model_config = SettingsConfigDict(
         toml_file="settings.toml",
-        env_file=f"config/environments/.env.{os.getenv('ENV', 'development')}",
+        env_file=f".env.{os.getenv('ENV', 'development')}",
         case_sensitive=False,
         use_enum_values=True,
         extra="ignore",
