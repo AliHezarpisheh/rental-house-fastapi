@@ -31,10 +31,19 @@ class RelativePathFilter:
 
         Notes
         -----
-        The `relativepath` is computed based on the `record.pathname` using
-        the current working directory as the starting point.
+        The `relativepath` is computed by checking for site-packages`paths.
+        It strips these paths to show only the relevant file path for debugging.
         """
-        record.relativepath = os.path.relpath(record.pathname, start=os.getcwd())
+        relativepath = os.path.relpath(record.pathname, start=os.getcwd())
+
+        # If the record is for a third-party logger, remove the path to site-packages/.
+        if "site-packages" in relativepath:
+            try:
+                relativepath = relativepath.split("site-packages/")[1]
+            except IndexError:
+                pass  # Ignore if it doesn't match the expected structure.
+        setattr(record, "relativepath", relativepath)
+
         return True
 
 
@@ -42,9 +51,9 @@ class LoggingConfig:
     """Class for configuring logging settings based on a specified config file."""
 
     def __init__(
-        self, environment: str = "development", config_path: str = "settings.toml"
+        self, env: str = "development", config_path: str = "settings.toml"
     ) -> None:
-        self._env = environment
+        self._env = env
         self._parser = TOMLParser(file_path=config_path)
         self._logger: logging.Logger | None = None
 
@@ -63,16 +72,11 @@ class LoggingConfig:
         handlers = logging_config.get("handlers", None)
         self.validate_and_create_dirs(handlers=handlers)
 
-        # Determine the appropriate logger configuration based on the environment.
-        logger_config = logging_config["loggers"].get(self._env)
-
-        if logger_config:
-            logging_config["loggers"][""] = logger_config
-
+        # Config logging based on the configuration data.
         logging.config.dictConfig(logging_config)
 
         # Set the logger object.
-        self._logger = logging.getLogger()
+        self._logger = logging.getLogger(self._env)
 
         # Add relativepath filter to all the handlers
         for handler in self._logger.handlers:

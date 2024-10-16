@@ -57,7 +57,7 @@ version = 1
 disable_existing_loggers = false
 
 [logging.formatters.coreFormatter]
-format = "%(asctime)s - [%(levelname)s] - %(relativepath)s - Line: %(lineno)d - Message: %(message)s"
+format = "%(asctime)s - %(levelname)s - %(name)s - %(relativepath)s:%(lineno)d - %(message)s"
 datefmt = "%Y-%m-%d %H:%M:%S"
 
 [logging.handlers.consoleHandler]
@@ -97,4 +97,3 @@ propagate = true
 level = "DEBUG"
 handlers = ["consoleHandler", "fileHandler"]
 propagate = true
-

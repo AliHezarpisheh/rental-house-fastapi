@@ -11,4 +11,4 @@ settings = get_settings()
 db = AsyncDatabaseConnection(database_url=settings.database_url)
 
 # Logging
-logger = LoggingConfig(environment=settings.env).get_logger()
+logger = LoggingConfig(env=settings.env).get_logger()
