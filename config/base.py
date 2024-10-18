@@ -15,7 +15,7 @@ logger = LoggingConfig(env=settings.env).get_logger()
 db = AsyncDatabaseConnection(database_url=settings.database_url)
 
 # Redis
-redis_conn = AsyncRedisConnection(
+redis_connection = AsyncRedisConnection(
     host=settings.redis_host,
     port=settings.redis_port,
     db=settings.redis_db,
