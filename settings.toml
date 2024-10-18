@@ -1,5 +1,6 @@
-# High level, general settings.
-env = "development"
+# These settings and configurations are consistent accross different environments.
+# Inconsistent and secret settings and configurations should be placed in the .env files,
+# using the .env.example files.
 
 # OpenAPI informatino.
 [openapi]
