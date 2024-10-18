@@ -1,7 +1,7 @@
 """Module for handling all the settings in the application."""
 
 import os
-from typing import Type
+from typing import Annotated, Type
 
 from pydantic import Field
 from pydantic_settings import (
@@ -35,8 +35,32 @@ class Settings(BaseSettings):
 
     # .env Settings
     env: Env
-    database_url: str = Field(..., description="Database connection URL.")
-    origins: list[str] = Field(..., description="List of allowed API origins.")
+
+    # PostgreSQL settings
+    database_url: Annotated[str, Field(..., description="Database connection URL.")]
+
+    # Redis settings
+    redis_host: Annotated[
+        str, Field(..., description="Redis server's hostname/IP.")
+    ] = "localhost"
+    redis_port: Annotated[
+        int, Field(..., description="The port the Redis instance is running.")
+    ] = 6037
+    redis_db: Annotated[
+        int, Field(..., description="Redis database (Accepted values: 0-15)")
+    ] = 0
+    redis_password: Annotated[str, Field(..., description="Redis instance password.")]
+    redis_pool_max_connection: Annotated[
+        int, Field(..., description="Redis pool max connection limit.")
+    ] = 100
+    redis_ttl_otp: Annotated[
+        int, Field(..., description="Redis OTPs time-to-live.")
+    ] = 300
+
+    # API settings
+    origins: Annotated[
+        list[str], Field(..., description="List of allowed API origins.")
+    ]
 
     # Settings config
     model_config = SettingsConfigDict(
