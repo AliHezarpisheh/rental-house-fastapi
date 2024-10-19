@@ -47,7 +47,14 @@ class AsyncRedisConnection:
             port=self.port,
             db=self.db,
             max_connections=self.max_connection,
+            encoding="utf-8",
+            decode_responses=True,
         )
+
+    def get_connection(self) -> Redis:
+        """Return a `Redis` client from the connection pool."""
+        redis_client = self.get_client()
+        return redis_client.from_pool()
 
     async def disconnect(self) -> None:
         """Close the Redis client connection asynchronously."""
