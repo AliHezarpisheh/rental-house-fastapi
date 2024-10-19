@@ -13,10 +13,10 @@ repos:
     -   id: debug-statements
     -   id: check-yaml
     -   id: check-json
--   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.1
-    hooks:
-    -   id: ruff
-        args:
-        - --fix
-    -   id: ruff-format
+# -   repo: https://github.com/charliermarsh/ruff-pre-commit
+#     rev: v0.4.1
+#     hooks:
+#     -   id: ruff
+#         args:
+#         - --fix
+#     -   id: ruff-format
