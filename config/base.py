@@ -3,10 +3,10 @@
 from .database import AsyncDatabaseConnection
 from .logging import LoggingConfig
 from .redis import AsyncRedisConnection
-from .settings.base import get_settings
+from .settings.base import Settings
 
 # Settings
-settings = get_settings()
+settings = Settings()  # type: ignore
 
 # Logging
 logger = LoggingConfig(env=settings.env).get_logger()

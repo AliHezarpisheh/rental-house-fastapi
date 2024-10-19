@@ -53,9 +53,10 @@ class Settings(BaseSettings):
     redis_pool_max_connection: Annotated[
         int, Field(..., description="Redis pool max connection limit.")
     ] = 100
-    redis_ttl_otp: Annotated[
-        int, Field(..., description="Redis OTPs time-to-live.")
-    ] = 300
+
+    # OTP settings
+    otp_ttl: Annotated[int, Field(..., description="OTPs time-to-live.")] = 300
+    otp_digits: Annotated[int, Field(..., description="OTP digits number.")] = 6
 
     # API settings
     origins: Annotated[
@@ -88,8 +89,3 @@ class Settings(BaseSettings):
             env_settings,  # Read from environments variables
             file_secret_settings,  # Read from any file secret settings if applicable
         )
-
-
-def get_settings() -> Settings:
-    """Create a new Settings object."""
-    return Settings()  # type: ignore
