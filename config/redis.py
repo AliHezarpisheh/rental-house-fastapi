@@ -19,6 +19,7 @@ class AsyncRedisConnection:
         self.max_connection = max_connection
 
         self.redis_client: Redis | None = None
+        self.connection_pool: ConnectionPool | None = None
 
     def get_client(self) -> Redis:
         """
@@ -30,7 +31,7 @@ class AsyncRedisConnection:
             The Redis client.
         """
         if not self.redis_client:
-            connection_pool = self.create_connection_pool()
+            connection_pool = self.get_connection_pool()
             self.redis_client = Redis(
                 host=self.host,
                 port=self.port,
@@ -40,21 +41,30 @@ class AsyncRedisConnection:
             )
         return self.redis_client
 
-    def create_connection_pool(self) -> ConnectionPool:
-        """Create a connection pool with defined settings for `Redis` instance."""
-        return ConnectionPool(
-            host=self.host,
-            port=self.port,
-            db=self.db,
-            max_connections=self.max_connection,
-            encoding="utf-8",
-            decode_responses=True,
-        )
+    def get_connection_pool(self) -> ConnectionPool:
+        """
+        Lazily initializes and returns the Redis connection pool.
+
+        Returns
+        -------
+        redis.asyncio.ConnectionPool
+            The Redis connection pool.
+        """
+        if not self.connection_pool:
+            self.connection_pool = ConnectionPool(
+                host=self.host,
+                port=self.port,
+                db=self.db,
+                max_connections=self.max_connection,
+                encoding="utf-8",
+                decode_responses=True,
+            )
+        return self.connection_pool
 
     def get_connection(self) -> Redis:
         """Return a `Redis` client from the connection pool."""
         redis_client = self.get_client()
-        return redis_client.from_pool()
+        return redis_client.from_pool(self.connection_pool)
 
     async def disconnect(self) -> None:
         """Close the Redis client connection asynchronously."""
