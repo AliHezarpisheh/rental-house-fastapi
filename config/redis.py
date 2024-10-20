@@ -64,7 +64,8 @@ class AsyncRedisConnection:
     def get_connection(self) -> Redis:
         """Return a `Redis` client from the connection pool."""
         redis_client = self.get_client()
-        return redis_client.from_pool(self.connection_pool)
+        connection_pool = self.get_connection_pool()
+        return redis_client.from_pool(connection_pool)
 
     async def disconnect(self) -> None:
         """Close the Redis client connection asynchronously."""
