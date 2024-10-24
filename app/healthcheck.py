@@ -55,7 +55,7 @@ async def check_health() -> Any:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             status=Status.FAILURE,
             message="Database not available",
-            documentation_link=HTTPStatusDoc.STATUS_500,
+            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
         )
     is_redis_available = await redis_connection.test_connection()
     if not is_redis_available:
@@ -63,7 +63,7 @@ async def check_health() -> Any:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             status=Status.FAILURE,
             message="Redis not available",
-            documentation_link=HTTPStatusDoc.STATUS_500,
+            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
         )
     return {
         "database": is_db_available,

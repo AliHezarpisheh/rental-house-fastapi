@@ -75,14 +75,18 @@ async def request_validation_exception_handler(
         (Unprocessable Entity).
     """
     exc_data = exc.errors()[0]
+    message = exc.errors()[0]["msg"]
+    reason = exc.errors()[0]["type"]
+    field = exc_data["loc"][1] if len(exc_data["loc"]) >= 2 else ""
+    loc = exc_data["loc"][0]
     logger.error("Request validation error occurred. Error details: %s", exc_data)
     raise CustomHTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         status=Status.VALIDATION_ERROR,
-        message=exc_data["msg"],
-        field=f"{exc_data['loc'][1]}, in: {exc_data['loc'][0]}",
-        reason=exc_data["type"],
-        documentation_link=HTTPStatusDoc.STATUS_422,
+        message=message,
+        field=f"{field}, in: {loc}",
+        reason=reason,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_422,
     )
 
 
@@ -115,7 +119,7 @@ async def does_not_exist_exception_handler(
         status_code=status.HTTP_404_NOT_FOUND,
         status=Status.NOT_FOUND,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.STATUS_404,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_404,
     )
 
 
@@ -146,7 +150,7 @@ async def token_error_handler(request: Request, exc: TokenError) -> None:
         status_code=status.HTTP_403_FORBIDDEN,
         status=Status.FORBIDDEN,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.STATUS_403,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
     )
 
 
@@ -179,5 +183,5 @@ async def duplicate_resource_error_handler(
         status_code=status.HTTP_409_CONFLICT,
         status=Status.CONFLICT,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.STATUS_409,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_409,
     )
