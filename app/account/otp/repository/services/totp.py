@@ -9,6 +9,7 @@ import pyotp
 from fastapi.concurrency import run_in_threadpool
 from redis.asyncio import Redis
 
+from app.account.otp.helpers.exceptions import TotpVerificationFailedException
 from app.account.otp.repository.bll import TOTPBusinessLogicLayer
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger, settings
@@ -56,13 +57,13 @@ class TotpService:
             return {
                 "status": Status.CREATED,
                 "message": "OTP sent successfully.",
-                "documentation_link": HTTPStatusDoc.STATUS_201,
+                "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
             }
 
         return {
             "status": Status.FAILURE,
             "message": "Failed to set OTP. Contact support.",
-            "documentation_link": HTTPStatusDoc.STATUS_500,
+            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
         }
 
     async def verify_totp(self, user_id: int, totp: str) -> dict[str, str]:
@@ -85,14 +86,10 @@ class TotpService:
             return {
                 "status": Status.SUCCESS,
                 "message": "OTP verified successfully.",
-                "documentation_link": HTTPStatusDoc.STATUS_200,
+                "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
             }
 
-        return {
-            "status": Status.FAILURE,
-            "message": "OTP verification failed. Contact support.",
-            "documentation_link": HTTPStatusDoc.STATUS_500,
-        }
+        raise TotpVerificationFailedException("Incorrect OTP.")
 
     def _create_totp(self) -> str:
         """
