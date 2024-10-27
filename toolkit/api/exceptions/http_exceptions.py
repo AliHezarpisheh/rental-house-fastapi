@@ -4,6 +4,8 @@ from typing import Optional
 
 from fastapi import HTTPException
 
+from toolkit.api.enums import HTTPStatusDoc, Status
+
 
 class CustomHTTPException(HTTPException):
     """
@@ -13,8 +15,8 @@ class CustomHTTPException(HTTPException):
     ----------
     status_code : int
         The status of the error. This is different from HTTP status_code (e.g., error).
-    status : str
-        A human-readable description of the HTTP status (e.g., "Service Unavailable").
+    status : Status
+        A status describing the response (e.g., "validation_error").
     message : str
         A concise description of the error message.
     field : str, optional
@@ -22,7 +24,7 @@ class CustomHTTPException(HTTPException):
     reason : str, optional
         A detailed explanation of why the parameter or field is invalid
         (default is None).
-    documentation_link : str
+    documentation_link : HTTPStatusDoc
         The URL link to the documentation explaining the HTTP status code.
     headers : dict[str, str] or None, optional
         Additional headers to include in the error response (default is None).
@@ -32,11 +34,11 @@ class CustomHTTPException(HTTPException):
         self,
         *,
         status_code: int,
-        status: str,
+        status: Status,
         message: str,
         field: Optional[str] = None,
         reason: Optional[str] = None,
-        documentation_link: str,
+        documentation_link: HTTPStatusDoc,
         headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize a CustomHTTPException instance."""

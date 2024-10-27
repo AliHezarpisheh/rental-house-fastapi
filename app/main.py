@@ -24,6 +24,7 @@ from .exception_handlers import (
     custom_http_exception_handler,
     does_not_exist_exception_handler,
     duplicate_resource_error_handler,
+    internal_exception_handler,
     request_validation_exception_handler,
     token_error_handler,
 )
@@ -52,6 +53,10 @@ app.add_exception_handler(
 app.add_exception_handler(
     RequestValidationError,
     request_validation_exception_handler,  # type: ignore
+)
+app.add_exception_handler(
+    Exception,
+    internal_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
     DoesNotExistError,

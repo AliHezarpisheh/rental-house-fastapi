@@ -1,12 +1,12 @@
 """Module containing custom exception handlers for FastAPI applications."""
 
-import logging
-
-from fastapi import Request, status
+import fastapi
+from fastapi import Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 
-from toolkit.api.enums import HTTPStatusDoc, Status
+from config.base import logger
+from toolkit.api.enums import HTTPStatusDoc, Messages, Status
 from toolkit.api.exceptions import (
     CustomHTTPException,
     DoesNotExistError,
@@ -14,12 +14,10 @@ from toolkit.api.exceptions import (
     TokenError,
 )
 
-logger = logging.getLogger(__name__)
-
 
 async def custom_http_exception_handler(
     request: Request, exc: CustomHTTPException
-) -> JSONResponse:
+) -> ORJSONResponse:
     """
     Handle CustomHTTPException raised within FastAPI routes.
 
@@ -32,19 +30,17 @@ async def custom_http_exception_handler(
 
     Returns
     -------
-    JSONResponse
+    ORJSONResponse
         JSON response containing error details, including status code,
         error message, details, and documentation link if available.
     """
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=exc.status_code,
         content={
-            "error": {
-                "status": str(exc.status),
-                "message": exc.message,
-                "details": exc.details,
-                "documentation_link": exc.documentation_link,
-            }
+            "status": exc.status.value,
+            "message": exc.message,
+            "details": exc.details,
+            "documentation_link": exc.documentation_link.value,
         },
     )
 
@@ -77,17 +73,48 @@ async def request_validation_exception_handler(
     exc_data = exc.errors()[0]
     message = exc.errors()[0]["msg"]
     reason = exc.errors()[0]["type"]
-    field = exc_data["loc"][1] if len(exc_data["loc"]) >= 2 else ""
+    field = exc_data["loc"][1] if len(exc_data["loc"]) >= 2 else "-"
     loc = exc_data["loc"][0]
-    logger.error("Request validation error occurred. Error details: %s", exc_data)
+    logger.error("Handle request validation exception. Exception details: %s", exc_data)
     raise CustomHTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
         status=Status.VALIDATION_ERROR,
         message=message,
         field=f"{field}, in: {loc}",
         reason=reason,
         documentation_link=HTTPStatusDoc.HTTP_STATUS_422,
-    )
+    ) from exc
+
+
+async def internal_exception_handler(request: Request, exc: Exception) -> None:
+    """
+    Handle unexpected internal server errors by raising a CustomHTTPException.
+
+    This function is an exception handler for any general Python exceptions
+    that may arise within FastAPI routes. It catches unhandled exceptions and
+    raises a CustomHTTPException with a status code of 500 (Internal Server Error),
+    providing a generic error message and documentation link.
+
+    Parameters
+    ----------
+    request : Request
+        The incoming request object.
+    exc : Exception
+        The general Python exception instance raised.
+
+    Raises
+    ------
+    CustomHTTPException
+        Always raises a CustomHTTPException with a status code of 500
+        (Internal Server Error).
+    """
+    logger.error("Handle general base python exception. Exception details: %s", exc)
+    raise CustomHTTPException(
+        status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status=Status.ERROR,
+        message=Messages.INTERNAL_SERVER_ERROR,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
+    ) from exc
 
 
 async def does_not_exist_exception_handler(
@@ -114,13 +141,13 @@ async def does_not_exist_exception_handler(
     CustomHTTPException
         Always raises a CustomHTTPException with a status code of 404 (Not Found).
     """
-    logger.error("Does not exist error occurred. Error details: %s", exc)
+    logger.error("Handled does not exist exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
+        status_code=fastapi.status.HTTP_404_NOT_FOUND,
         status=Status.NOT_FOUND,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_404,
-    )
+    ) from exc
 
 
 async def token_error_handler(request: Request, exc: TokenError) -> None:
@@ -145,13 +172,13 @@ async def token_error_handler(request: Request, exc: TokenError) -> None:
     CustomHTTPException
         Always raises a CustomHTTPException with a status code of 401 (Unauthorized).
     """
-    logger.error("Base token error occurred. Error details: %s", exc)
+    logger.error("Handle base token exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
+        status_code=fastapi.status.HTTP_403_FORBIDDEN,
         status=Status.FORBIDDEN,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
-    )
+    ) from exc
 
 
 async def duplicate_resource_error_handler(
@@ -178,10 +205,10 @@ async def duplicate_resource_error_handler(
     CustomHTTPException
         Always raises a CustomHTTPException with a status code of 409 (Conflict).
     """
-    logger.error("Duplicate resource error occurred. Error details: %s", exc)
+    logger.error("Handle duplicate resource exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=status.HTTP_409_CONFLICT,
+        status_code=fastapi.status.HTTP_409_CONFLICT,
         status=Status.CONFLICT,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_409,
-    )
+    ) from exc
