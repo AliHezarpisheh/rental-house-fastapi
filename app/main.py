@@ -11,6 +11,7 @@ from fastapi.responses import ORJSONResponse
 
 from app.account.auth.api.routers.user import router as users_router
 from app.account.otp.api.routers.otp import router as otp_router
+from app.account.otp.helpers.exceptions import OtpException
 from config.base import settings
 from config.settings.openapi import responses
 from toolkit.api.exceptions import (
@@ -25,6 +26,7 @@ from .exception_handlers import (
     does_not_exist_exception_handler,
     duplicate_resource_error_handler,
     internal_exception_handler,
+    otp_exception_handler,
     request_validation_exception_handler,
     token_error_handler,
 )
@@ -69,6 +71,10 @@ app.add_exception_handler(
 app.add_exception_handler(
     DuplicateResourceError,
     duplicate_resource_error_handler,  # type: ignore
+)
+app.add_exception_handler(
+    OtpException,
+    otp_exception_handler,  # type: ignore
 )
 
 # Include routers

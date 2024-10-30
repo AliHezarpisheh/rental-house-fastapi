@@ -1,7 +1,11 @@
 """Module defines exceptions related to OTPs."""
 
 
-class TotpException(BaseException):
+class OtpException(Exception):
+    """Base exception for OTP-related errors."""
+
+
+class TotpException(OtpException):
     """Base exception for TOTP-related errors."""
 
 
