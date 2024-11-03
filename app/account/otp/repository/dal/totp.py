@@ -8,9 +8,9 @@ and unlink(delete) the otp keys and values.
 from redis.asyncio import Redis
 
 from app.account.otp.helpers.exceptions import (
-    TotpCreationFailedException,
-    TotpRemovalFailedException,
-    TotpVerificationFailedException,
+    TotpCreationFailedError,
+    TotpRemovalFailedError,
+    TotpVerificationFailedError,
 )
 from config.base import logger, settings
 
@@ -47,7 +47,7 @@ class TotpDataAccessLayer:
 
         Raises
         ------
-        TotpCreationFailedException
+        TotpCreationFailedError
             If there is an error while creating the TOTP.
         """
         logger.debug(
@@ -69,9 +69,7 @@ class TotpDataAccessLayer:
                 str(err),
                 exc_info=True,
             )
-            raise TotpCreationFailedException(
-                "Server error! Call the support."
-            ) from err
+            raise TotpCreationFailedError("Server error! Call the support.") from err
 
         if not is_created:
             logger.critical(
@@ -79,7 +77,7 @@ class TotpDataAccessLayer:
                 user_id,
                 key_name,
             )
-            raise TotpCreationFailedException("Server error! Call the support.")
+            raise TotpCreationFailedError("Server error! Call the support.")
 
         logger.info("set_totp() - TOTP successfully created for user_id: %d", user_id)
         return bool(is_created)
@@ -100,7 +98,7 @@ class TotpDataAccessLayer:
 
         Raises
         ------
-        TotpVerificationFailedException
+        TotpVerificationFailedError
             If there is an error retrieving or verifying the TOTP.
         """
         logger.debug("get_totp() - Retrieving TOTP for user_id: %d", user_id)
@@ -116,7 +114,7 @@ class TotpDataAccessLayer:
                 str(err),
                 exc_info=True,
             )
-            raise TotpVerificationFailedException(
+            raise TotpVerificationFailedError(
                 "Server error! Call the support."
             ) from err
 
@@ -126,7 +124,7 @@ class TotpDataAccessLayer:
                 user_id,
                 key_name,
             )
-            raise TotpVerificationFailedException(
+            raise TotpVerificationFailedError(
                 "OTP verification failed. OTP expiration reached or no OTP was created."
             )
 
@@ -149,7 +147,7 @@ class TotpDataAccessLayer:
 
         Raises
         ------
-        TotpRemovalFailedException
+        TotpRemovalFailedError
             If there is an error deleting the TOTP.
         """
         logger.debug(
@@ -167,13 +165,13 @@ class TotpDataAccessLayer:
                 str(err),
                 exc_info=True,
             )
-            raise TotpRemovalFailedException("Server error! Call the support.") from err
+            raise TotpRemovalFailedError("Server error! Call the support.") from err
 
         if not is_deleted:
             logger.error(
                 "delete_totp() - Failed to delete TOTP for user_id: %d", user_id
             )
-            raise TotpRemovalFailedException("Server error! Call the support.")
+            raise TotpRemovalFailedError("Server error! Call the support.")
 
         logger.info(
             "delete_totp() - Successfully deleted TOTP for user_id: %d", user_id

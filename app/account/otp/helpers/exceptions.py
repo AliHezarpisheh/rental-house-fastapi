@@ -1,25 +1,25 @@
 """Module defines exceptions related to OTPs."""
 
 
-class OtpException(Exception):
+class OtpError(Exception):
     """Base exception for OTP-related errors."""
 
 
-class TotpException(OtpException):
+class TotpError(OtpError):
     """Base exception for TOTP-related errors."""
 
 
-class TotpVerificationFailedException(TotpException):
+class TotpVerificationFailedError(TotpError):
     """Exception raised when TOTP verification fails."""
 
 
-class TotpCreationFailedException(TotpException):
+class TotpCreationFailedError(TotpError):
     """Exception raised when TOTP creation fails."""
 
 
-class TotpRemovalFailedException(TotpException):
+class TotpRemovalFailedError(TotpError):
     """Exception raised when TOTP removal fails."""
 
 
-class TotpAlreadySetException(TotpException):
+class TotpAlreadySetError(TotpError):
     """Exception raised when attempting to set an already existing TOTP."""

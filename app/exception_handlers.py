@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
-from app.account.otp.helpers.exceptions import OtpException
+from app.account.otp.helpers.exceptions import OtpError
 from config.base import logger
 from toolkit.api.enums import HTTPStatusDoc, Messages, Status
 from toolkit.api.exceptions import (
@@ -175,20 +175,20 @@ async def token_error_handler(request: Request, exc: TokenError) -> None:
     """
     logger.error("Handle base token exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=fastapi.status.HTTP_403_FORBIDDEN,
+        status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
         status=Status.FORBIDDEN,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
     ) from exc
 
 
-async def otp_exception_handler(request: Request, exc: OtpException) -> None:
+async def otp_error_handler(request: Request, exc: OtpError) -> None:
     """
-    Handle OtpException by raising a CustomHTTPException with details.
+    Handle TokenError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    OtpException exceptions raised within FastAPI routes.
-    It raises a CustomHTTPException with a status code of 401 (Unauthorized)
+    TokenError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of 403 (Forbidden)
     and includes details such as the error message, reason, affected field,
     and a documentation link.
 
@@ -196,13 +196,13 @@ async def otp_exception_handler(request: Request, exc: OtpException) -> None:
     ----------
     request : Request
         The incoming request object.
-    exc : OtpException
-        The instance of OtpException raised.
+    exc : OtpError
+        The instance of OtpError raised.
 
     Raises
     ------
     CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 401 (Unauthorized).
+        Always raises a CustomHTTPException with a status code of 403 (Forbidden).
     """
     logger.error("Handle base otp exception. Exception details: %s", exc)
     raise CustomHTTPException(

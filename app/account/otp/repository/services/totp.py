@@ -9,7 +9,7 @@ import pyotp
 from fastapi.concurrency import run_in_threadpool
 from redis.asyncio import Redis
 
-from app.account.otp.helpers.exceptions import TotpVerificationFailedException
+from app.account.otp.helpers.exceptions import TotpVerificationFailedError
 from app.account.otp.repository.bll import TOTPBusinessLogicLayer
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger, settings
@@ -89,7 +89,7 @@ class TotpService:
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
             }
 
-        raise TotpVerificationFailedException("Incorrect OTP.")
+        raise TotpVerificationFailedError("Incorrect OTP.")
 
     def _create_totp(self) -> str:
         """

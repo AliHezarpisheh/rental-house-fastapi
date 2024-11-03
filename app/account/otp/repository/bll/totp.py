@@ -8,7 +8,7 @@ interfacing with the data access layer.
 import bcrypt
 from redis.asyncio import Redis
 
-from app.account.otp.helpers.exceptions import TotpAlreadySetException
+from app.account.otp.helpers.exceptions import TotpAlreadySetError
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger
 
@@ -46,12 +46,12 @@ class TOTPBusinessLogicLayer:
 
         Raises
         ------
-        TotpAlreadySetException
+        TotpAlreadySetError
             If the user already has an active TOTP.
         """
         if await self.totp_dal.check_totp(user_id=user_id):
             logger.warning("TOTP already set for user_id: %d", user_id)
-            raise TotpAlreadySetException("User already has an active TOTP.")
+            raise TotpAlreadySetError("User already has an active TOTP.")
 
         logger.debug("Setting new TOTP for user_id: %d", user_id)
         return await self.totp_dal.set_totp(user_id=user_id, hashed_totp=hashed_totp)
