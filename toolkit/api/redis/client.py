@@ -53,13 +53,5 @@ Annotated[Redis, Depends(get_redis_client)]):  # noqa: E501
             message=Messages.INTERNAL_SERVER_ERROR,
             documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
         )
-    except Exception as err:
-        logger.critical("Unexpected error occurred. error: %s", str(err))
-        raise CustomHTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status=Status.ERROR,
-            message=Messages.INTERNAL_SERVER_ERROR,
-            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-        )
     finally:
         await redis_client.close()

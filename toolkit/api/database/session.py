@@ -58,14 +58,5 @@ Annotated[AsyncSession, Depends(get_async_db_session)]):
             message=Messages.INTERNAL_SERVER_ERROR,
             documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
         )
-    except Exception:
-        await db_session.rollback()
-        logger.critical("Unexpected error occurred.", exc_info=True)
-        raise CustomHTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status=Status.ERROR,
-            message=Messages.INTERNAL_SERVER_ERROR,
-            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-        )
     finally:
         await db_session.close()
