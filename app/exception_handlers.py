@@ -210,10 +210,10 @@ async def otp_error_handler(request: Request, exc: OtpError) -> None:
     """
     logger.error("Handle base otp exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=fastapi.status.HTTP_403_FORBIDDEN,
-        status=Status.FORBIDDEN,
+        status_code=exc.status_code,
+        status=exc.status,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
+        documentation_link=exc.http_status_doc,
     ) from exc
 
 

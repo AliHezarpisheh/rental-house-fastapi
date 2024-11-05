@@ -57,7 +57,7 @@ class TotpDataAccessLayer:
             If there is an error while creating the TOTP.
         """
         logger.debug(
-            "set_totp() - Attempting to set TOTP for user_id: %d, Redis key: %s",
+            "Attempting to set TOTP for user_id: %d, Redis key: %s",
             user_id,
             self._get_totp_key_name(user_id),
         )
@@ -72,7 +72,7 @@ class TotpDataAccessLayer:
 
         if not is_created:
             logger.error(
-                "set_totp() - Failed to create TOTP for user_id: %d, Redis key: %s",
+                "Failed to create TOTP for user_id: %d, Redis key: %s",
                 user_id,
                 key_name,
             )
@@ -100,7 +100,7 @@ class TotpDataAccessLayer:
         TotpVerificationFailedError
             If there is an error retrieving or verifying the TOTP.
         """
-        logger.debug("get_totp() - Retrieving TOTP for user_id: %d", user_id)
+        logger.debug("Retrieving TOTP for user_id: %d", user_id)
 
         key_name = self._get_totp_key_name(user_id=user_id)
         hashed_totp: str | None = await self.redis_client.hget(  # type: ignore
@@ -109,7 +109,7 @@ class TotpDataAccessLayer:
 
         if not hashed_totp:
             logger.error(
-                "get_totp() - No OTP found for user_id: %d, Redis key: %s",
+                "No OTP found for user_id: %d, Redis key: %s",
                 user_id,
                 key_name,
             )
@@ -117,9 +117,7 @@ class TotpDataAccessLayer:
                 "OTP verification failed. OTP expiration reached or no OTP was created."
             )
 
-        logger.debug(
-            "get_totp() - Successfully retrieved TOTP for user_id: %d", user_id
-        )
+        logger.debug("Successfully retrieved TOTP for user_id: %d", user_id)
         return hashed_totp
 
     async def delete_totp(self, user_id: int) -> bool:
@@ -141,22 +139,16 @@ class TotpDataAccessLayer:
         TotpRemovalFailedError
             If there is an error deleting the TOTP.
         """
-        logger.debug(
-            "delete_totp() - Attempting to remove TOTP for user_id: %d", user_id
-        )
+        logger.debug("Attempting to remove TOTP for user_id: %d", user_id)
 
         key_name = self._get_totp_key_name(user_id=user_id)
         is_deleted = await self.redis_client.unlink(key_name)
 
         if not is_deleted:
-            logger.error(
-                "delete_totp() - Failed to delete TOTP for user_id: %d", user_id
-            )
+            logger.error("Failed to delete TOTP for user_id: %d", user_id)
             raise TotpRemovalFailedError("Server error! Call the support.")
 
-        logger.debug(
-            "delete_totp() - Successfully deleted TOTP for user_id: %d", user_id
-        )
+        logger.debug("Successfully deleted TOTP for user_id: %d", user_id)
         return bool(is_deleted)
 
     async def check_totp(self, user_id: int) -> bool:
@@ -173,15 +165,13 @@ class TotpDataAccessLayer:
         bool
             True if a TOTP exists for the user, False otherwise.
         """
-        logger.debug(
-            "check_totp() - Checking existence of TOTP for user_id: %d", user_id
-        )
+        logger.debug("Checking existence of TOTP for user_id: %d", user_id)
 
         key_name = self._get_totp_key_name(user_id=user_id)
         is_exist = await self.redis_client.exists(key_name)
 
         logger.debug(
-            "check_totp() - TOTP existence for user_id: %d: %s",
+            "TOTP existence for user_id: %d: %s",
             user_id,
             "Exists" if is_exist else "Does not exist",
         )
@@ -242,7 +232,7 @@ class TotpDataAccessLayer:
         attempts: SupportsInt | None = await self.redis_client.hget(  # type: ignore
             key_name, key="attempts"
         )
-        return int(attempts) if isinstance(attempts, int) else -1
+        return int(attempts) if attempts is not None else -1
 
     async def set_expiration(self, key_name: str, ttl: int, nx: bool = True) -> None:
         """

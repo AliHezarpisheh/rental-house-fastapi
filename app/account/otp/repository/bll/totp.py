@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 
 from app.account.otp.helpers.exceptions import (
     TotpAlreadySetError,
-    TotpVerificationFailedError,
+    TotpVerificationAttemptsLimitError,
 )
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger
@@ -87,7 +87,9 @@ class TOTPBusinessLogicLayer:
 
         user_attempts = await self.totp_dal.get_attempts(user_id=user_id)
         if user_attempts >= self.MAX_VERIFY_ATTEMPTS:
-            raise TotpVerificationFailedError("Too much requests for verifying OTP.")
+            raise TotpVerificationAttemptsLimitError(
+                "Too much requests for verifying OTP."
+            )
 
         # Check OTP hash and validate it.
         logger.debug("Verifying TOTP for user_id: %d", user_id)
