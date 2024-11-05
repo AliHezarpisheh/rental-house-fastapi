@@ -87,7 +87,9 @@ async def request_validation_exception_handler(
     ) from exc
 
 
-async def internal_exception_handler(request: Request, exc: Exception) -> None:
+async def internal_exception_handler(
+    request: Request, exc: Exception
+) -> ORJSONResponse:
     """
     Handle unexpected internal server errors by raising a CustomHTTPException.
 
@@ -110,12 +112,14 @@ async def internal_exception_handler(request: Request, exc: Exception) -> None:
         (Internal Server Error).
     """
     logger.error("Handle general base python exception. Exception details: %s", exc)
-    raise CustomHTTPException(
+    return ORJSONResponse(
         status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-        status=Status.ERROR,
-        message=Messages.INTERNAL_SERVER_ERROR,
-        documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-    ) from exc
+        content={
+            "status": Status.ERROR,
+            "message": Messages.INTERNAL_SERVER_ERROR,
+            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
+        },
+    )
 
 
 async def does_not_exist_exception_handler(

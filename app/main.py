@@ -49,16 +49,16 @@ app = FastAPI(
 
 # Register custom exception handlers
 app.add_exception_handler(
+    Exception,
+    internal_exception_handler,
+)
+app.add_exception_handler(
     CustomHTTPException,
     custom_http_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
     RequestValidationError,
     request_validation_exception_handler,  # type: ignore
-)
-app.add_exception_handler(
-    Exception,
-    internal_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
     DoesNotExistError,
