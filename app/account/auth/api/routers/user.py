@@ -12,7 +12,7 @@ from toolkit.api.enums import OpenAPITags
 router = APIRouter(prefix="/users", tags=[OpenAPITags.USERS])
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED, operation_id="something")
 async def register(
     user_input: UserInput,
     user_service: Annotated[UserService, Depends(get_user_service)],

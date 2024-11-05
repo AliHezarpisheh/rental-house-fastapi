@@ -23,3 +23,7 @@ class TotpRemovalFailedError(TotpError):
 
 class TotpAlreadySetError(TotpError):
     """Exception raised when attempting to set an already existing TOTP."""
+
+
+class TotpAttemptsIncriminationError(TotpError):
+    """Exception raised when TOTP verification attempts fails."""

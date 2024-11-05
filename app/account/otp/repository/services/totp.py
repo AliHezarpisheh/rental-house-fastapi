@@ -19,7 +19,7 @@ from toolkit.api.enums import HTTPStatusDoc, Status
 class TotpService:
     """Service class for TOTP-related operations."""
 
-    def __init__(self, redis_client: Redis):
+    def __init__(self, redis_client: Redis) -> None:
         """
         Initialize the `TotpService`.
 
