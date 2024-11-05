@@ -2,7 +2,7 @@
 # Inconsistent and secret settings and configurations should be placed in the .env files,
 # using the .env.example files.
 
-# OpenAPI informatino.
+# OpenAPI information.
 [openapi]
 title = "Rental House Management API"
 version = "1.0.0"
