@@ -234,7 +234,7 @@ class TotpDataAccessLayer:
         )
         return int(attempts) if attempts is not None else -1
 
-    async def set_expiration(self, key_name: str, ttl: int, nx: bool = True) -> None:
+    async def set_expiration(self, key_name: str, ttl: int) -> None:
         """
         Set an expiration time for a specific Redis key associated with TOTP data.
 
@@ -248,16 +248,13 @@ class TotpDataAccessLayer:
             The name of the Redis key for which to set the expiration time.
         ttl : int
             The time-to-live duration (in seconds) for the key.
-        nx : bool, optional
-            If set to True, the TTL will only be applied if the key does not
-            already have an expiration (default is True).
 
         Raises
         ------
         TotpCreationFailedError
             If setting the expiration fails in Redis.
         """
-        is_set_expired = await self.redis_client.expire(key_name, time=ttl, nx=nx)
+        is_set_expired = await self.redis_client.expire(key_name, time=ttl)
         if not is_set_expired:
             logger.error(
                 "set_expiration () - Failed to set expiration time for Redis key: %s",
