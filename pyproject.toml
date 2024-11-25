@@ -31,6 +31,7 @@ orjson = "^3.10.6"
 bcrypt = "^4.2.0"
 redis = "^5.0.8"
 pyotp = "^2.9.0"
+pyjwt = "^2.10.0"
 
 
 [build-system]
