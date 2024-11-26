@@ -72,6 +72,46 @@ class UserService:
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
         }
 
+    async def verify(
+        self, user_id: int, totp: str
+    ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
+        """
+        Verify a user's account using OTP (TOTP).
+
+        This method validates the provided OTP (TOTP) for the specified user.
+        If the OTP is correct, the user's verification status is updated in the
+        database.
+
+        Parameters
+        ----------
+        user_id : int
+            The ID of the user to be verified.
+        totp : str
+            The OTP (TOTP) provided by the user for verification.
+
+        Returns
+        -------
+        dict[str, User | Status | HTTPStatusDoc | AuthMessages]
+            A dictionary containing the status, a message, and an optional
+            documentation link describing the result of the verification process.
+        """
+        otp_verification_result = await self.totp_service.verify_totp(
+            user_id=user_id, totp=totp
+        )
+        if otp_verification_result.get("status") == Status.SUCCESS:
+            await self.user_dal.verify_user(user_id=user_id)
+            return {
+                "status": Status.SUCCESS,
+                "message": AuthMessages.SUCCESS_VERIFICATION,
+                "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
+            }
+
+        return {
+            "status": Status.FAILURE,
+            "message": AuthMessages.FAILED_VERIFICATION,
+            "documentation_link": HTTPStatusDoc.HTTP_STATUS_400,
+        }
+
     def hash_password(self, password: str) -> str:
         """
         Hash the user's password.
