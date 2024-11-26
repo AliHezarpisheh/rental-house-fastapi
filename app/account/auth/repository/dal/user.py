@@ -18,7 +18,7 @@ from app.account.auth.helpers.exceptions import (
     UserDoesNotExistError,
 )
 from app.account.auth.models import User
-from app.account.auth.schemas import UserInput
+from app.account.auth.schemas import UserRegisterInput
 from config.base import logger
 
 
@@ -36,13 +36,15 @@ class UserDataAccessLayer:
         """
         self.db_session = db_session
 
-    async def create_user(self, user_input: UserInput, hashed_password: str) -> User:
+    async def create_user(
+        self, user_input: UserRegisterInput, hashed_password: str
+    ) -> User:
         """
         Create a new user.
 
         Parameters
         ----------
-        user_input : UserInput
+        user_input : UserRegisterInput
             User data to create a new user.
         hashed_password : str
             Hashed password for the new user.

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.models import User
-from app.account.auth.schemas import UserInput
+from app.account.auth.schemas import UserRegisterInput
 from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
 
@@ -36,7 +36,7 @@ class UserService:
         self.user_dal = UserDataAccessLayer(db_session=db_session)
 
     async def register(
-        self, user_input: UserInput
+        self, user_input: UserRegisterInput
     ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
         """
         Register a new user.
@@ -47,7 +47,7 @@ class UserService:
 
         Parameters
         ----------
-        user_input : UserInput
+        user_input : UserRegisterInput
             The user input data required for registration.
 
         Returns

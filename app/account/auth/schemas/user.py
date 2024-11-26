@@ -10,10 +10,17 @@ from toolkit.api.schemas.base import APIResponse, BaseSchema
 from toolkit.api.schemas.mixins import CommonMixins
 
 
-class UserInput(BaseSchema):
+class UserRegisterInput(BaseSchema):
     """Input schema for creating a new user."""
 
     username: str
+    email: EmailStr
+    password: str
+
+
+class UserLoginInput(BaseSchema):
+    """Input schema for user login."""
+
     email: EmailStr
     password: str
 
@@ -27,7 +34,7 @@ class UserOutputData(CommonMixins, BaseSchema):
     is_verified: Annotated[bool, Field(description="")]
 
 
-class UserRegisterOutput(APIResponse):
-    """Output schema for successful user register."""
+class UserOutput(APIResponse):
+    """Output schema for successful user operations output, containing the user data."""
 
     data: UserOutputData

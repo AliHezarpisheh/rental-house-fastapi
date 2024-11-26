@@ -9,7 +9,7 @@ from app.account.auth.api.dependencies.services import get_user_service
 from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.models import User
 from app.account.auth.repository.services import UserService
-from app.account.auth.schemas import UserInput, UserRegisterOutput
+from app.account.auth.schemas import UserOutput, UserRegisterInput
 from toolkit.api.enums import HTTPStatusDoc, OpenAPITags, Status
 from toolkit.api.schemas.base import APIResponse
 
@@ -19,11 +19,11 @@ router = APIRouter(prefix="/users", tags=[OpenAPITags.USERS])
 @router.post(
     "/register",
     status_code=status.HTTP_201_CREATED,
-    response_model=UserRegisterOutput,
+    response_model=UserOutput,
     response_model_exclude_none=True,
 )
 async def register(
-    user_input: UserInput,
+    user_input: UserRegisterInput,
     user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
     """
@@ -40,7 +40,7 @@ async def register(
     \f
     Parameters
     ----------
-    user_input : UserInput
+    user_input : UserRegisterInput
         A Pydantic schema containing the user's registration data.
     user_service : UserService
         A service dependency for handling user operations.
