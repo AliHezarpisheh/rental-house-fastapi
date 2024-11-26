@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from pydantic import EmailStr
+from typing import Annotated
 
-from toolkit.api.schemas.base import BaseSchema
+from pydantic import EmailStr, Field
+
+from toolkit.api.schemas.base import APIResponse, BaseSchema
+from toolkit.api.schemas.mixins import CommonMixins
 
 
 class UserInput(BaseSchema):
@@ -13,3 +16,18 @@ class UserInput(BaseSchema):
     username: str
     email: EmailStr
     password: str
+
+
+class UserOutputData(CommonMixins, BaseSchema):
+    """User output data schema."""
+
+    username: Annotated[str, Field(description="")]
+    email: Annotated[str, Field(description="")]
+    is_active: Annotated[bool, Field(description="")]
+    is_verified: Annotated[bool, Field(description="")]
+
+
+class UserRegisterOutput(APIResponse):
+    """Output schema for successful user register."""
+
+    data: UserOutputData

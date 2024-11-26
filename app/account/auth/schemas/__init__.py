@@ -1,1 +1,3 @@
-from .user import UserInput as UserInput
+from .user import UserInput, UserRegisterOutput
+
+__all__ = ["UserInput", "UserRegisterOutput"]
