@@ -13,6 +13,7 @@ from app.account.auth.helpers.exceptions import InvalidUserCredentials
 from app.account.auth.models import User
 from app.account.auth.schemas import UserRegisterInput
 from app.account.auth.schemas.user import UserLoginInput
+from app.account.otp.helpers.exceptions import TotpVerificationFailedError
 from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
 
@@ -157,6 +158,42 @@ class UserService:
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
         }
 
+    async def verify_authentication(self, email: str, totp: str) -> User:
+        """
+        Verify user authentication using email and TOTP.
+
+        This method retrieves the user associated with the provided email,
+        then verifies the provided TOTP against the user's record.
+
+        Parameters
+        ----------
+        email : str
+            The email of the user attempting authentication.
+        totp : str
+            The time-based one-time password provided for authentication.
+
+        Returns
+        -------
+        User
+            The authenticated user object if verification is successful.
+
+        Raises
+        ------
+        TotpVerificationFailedError
+            If TOTP verification fails.
+        """
+        # Get user from db though the user email.
+        user = await self.user_dal.get_user_by_email(email=email)
+
+        # Verify the provided totp.
+        otp_verification_result = await self.totp_service.verify_totp(
+            user_id=user.id, totp=totp
+        )
+        if otp_verification_result.get("status") == Status.SUCCESS:
+            return user
+
+        raise TotpVerificationFailedError("OTP verification failed. Please try again.")
+
     def hash_password(self, password: str) -> str:
         """
         Hash the user's password.
@@ -181,6 +218,24 @@ class UserService:
         return hashed_password.decode("utf-8")
 
     def check_password(self, password: str, hashed_password: str) -> bool:
+        """
+        Check if a plaintext password matches a hashed password.
+
+        This method verifies the password by comparing it with its hashed counterpart
+        using bcrypt.
+
+        Parameters
+        ----------
+        password : str
+            The plaintext password to verify.
+        hashed_password : str
+            The hashed password to compare against.
+
+        Returns
+        -------
+        bool
+            True if the password matches the hashed password, otherwise False.
+        """
         is_valid = bcrypt.checkpw(
             password=password.encode("utf-8"),
             hashed_password=hashed_password.encode("utf-8"),

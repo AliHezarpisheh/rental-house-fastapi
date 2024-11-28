@@ -76,6 +76,27 @@ class UserDataAccessLayer:
                 self.handle_integrity_error(exc=exc)
 
     async def get_user_by_email(self, email: str) -> User:
+        """
+        Retrieve a user by their email address.
+
+        This method queries the database for a user with the given email address.
+        If no user is found, it handles the `NoResultFound` exception.
+
+        Parameters
+        ----------
+        email : str
+            The email address of the user to be retrieved.
+
+        Returns
+        -------
+        User
+            The user object associated with the given email.
+
+        Raises
+        ------
+        UserDoesNotExistError
+            If no user with the specified email exists in the database.
+        """
         stmt = select(User).where(User.email == email)
 
         try:
