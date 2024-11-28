@@ -1,9 +1,12 @@
 """Module for handling all the settings in the application."""
 
 import os
-from typing import Annotated, Type
+from pathlib import Path
+from typing import Annotated, Any, Type
 
-from pydantic import Field
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import (
     BaseSettings,
     DotEnvSettingsSource,
@@ -59,9 +62,130 @@ class Settings(BaseSettings):
     otp_digits: Annotated[int, Field(..., description="OTP digits number.")] = 6
 
     # API settings
+    jwt_algorithm: Annotated[
+        str, Field(..., description="The algorithm used for signing the jwt.")
+    ]
+    jwt_keys_passphrase: Annotated[
+        str, Field(..., description="The passphrase for private and public keys.")
+    ]
+    jwt_private_key_path: Annotated[
+        str, Field(..., description="The path to the jwt private key.")
+    ]
+    jwt_public_key_path: Annotated[
+        str, Field(..., description="The path to the jwt public key.")
+    ]
+    jwt_private_key: Annotated[  # Dynamically loaded.
+        RSAPrivateKey | None,
+        Field(
+            ...,
+            description="The jwt private key, loaded from the private key file.",
+        ),
+    ] = None
+    jwt_public_key: Annotated[  # Dynamically loaded.
+        RSAPublicKey | None,
+        Field(..., description="The jwt public key, loaded from the public key file."),
+    ] = None
     origins: Annotated[
         list[str], Field(..., description="List of allowed API origins.")
     ]
+
+    @field_validator("jwt_private_key", mode="before")
+    @classmethod
+    def load_private_key(cls, value: Any, info: ValidationInfo) -> RSAPrivateKey:
+        """
+        Load and validate the RSA private key for JWT signing.
+
+        This validator checks the existence of the private key file, loads it
+        using the passphrase specified in the settings, and ensures that the
+        loaded key is an instance of `RSAPrivateKey`.
+
+        Parameters
+        ----------
+        value : Any
+            The original value of the private key field (not used in this validation).
+        info : ValidationInfo
+            Provides access to the validation context, including settings data.
+
+        Returns
+        -------
+        RSAPrivateKey
+            The RSA private key loaded from the specified path.
+
+        Raises
+        ------
+        RuntimeError
+            If the private key file does not exist or cannot be loaded.
+        AssertionError
+            If the loaded key is not an instance of `RSAPrivateKey`.
+        """
+        private_key_path = info.data["jwt_private_key_path"]
+        keys_passphrase = info.data["jwt_keys_passphrase"]
+        path = Path(private_key_path)
+        if not path.exists():
+            raise RuntimeError(
+                "The private and public keys are not generated yet. Try to generate"
+                f"keys in the {private_key_path} path, using the command"
+                f"ssh-keygen -t rsa -b 2048 -f {private_key_path}\n"
+                "Make sure that you set the correct passphrase for the files according"
+                "to the .env files."
+            )
+
+        with path.open("rb") as key_file:
+            private_key = serialization.load_ssh_private_key(
+                key_file.read(), password=keys_passphrase.encode("utf-8")
+            )
+        assert isinstance(private_key, RSAPrivateKey), (
+            "jwt_private_key should be instance of `RSAPrivateKey`, but got "
+            f"{type(private_key)}"
+        )
+        return private_key
+
+    @field_validator("jwt_public_key", mode="before")
+    @classmethod
+    def load_public_key(cls, value: Any, info: ValidationInfo) -> RSAPublicKey:
+        """
+        Load and validate the RSA public key for JWT verification.
+
+        This validator checks the existence of the public key file, loads it,
+        and ensures that the loaded key is an instance of `RSAPublicKey`.
+
+        Parameters
+        ----------
+        value : Any
+            The original value of the public key field (not used in this validation).
+        info : ValidationInfo
+            Provides access to the validation context, including settings data.
+
+        Returns
+        -------
+        RSAPublicKey
+            The RSA public key loaded from the specified path.
+
+        Raises
+        ------
+        RuntimeError
+            If the public key file does not exist or cannot be loaded.
+        AssertionError
+            If the loaded key is not an instance of `RSAPublicKey`.
+        """
+        public_key_path = info.data["jwt_public_key_path"]
+        path = Path(public_key_path)
+        if not path.exists():
+            raise RuntimeError(
+                "The private and public keys are not generated yet. Try to generate"
+                f"keys in the {public_key_path} path, using the command"
+                f"ssh-keygen -t rsa -b 2048 -f {public_key_path}\n"
+                "Make sure that you set the correct passphrase for the files according"
+                "to the .env files."
+            )
+
+        with path.open("rb") as key_file:
+            public_key = serialization.load_ssh_public_identity(key_file.read())
+        assert isinstance(public_key, RSAPublicKey), (
+            "jwt_private_key should be instance of `RSAPublicKey`, but got "
+            f"{type(public_key)}"
+        )
+        return public_key
 
     # Settings config
     model_config = SettingsConfigDict(
