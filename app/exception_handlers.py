@@ -13,6 +13,7 @@ from toolkit.api.exceptions import (
     DoesNotExistError,
     DuplicateResourceError,
     TokenError,
+    UnauthorizedError,
 )
 
 
@@ -152,6 +153,39 @@ async def does_not_exist_exception_handler(
         status=Status.NOT_FOUND,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_404,
+    ) from exc
+
+
+async def unauthorized_exception_handler(
+    request: Request, exc: UnauthorizedError
+) -> None:
+    """
+    Handle UnauthorizedError by raising a CustomHTTPException with details.
+
+    This function is an exception handler specifically designed to handle
+    UnauthorizedError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of 401 (Unauthorized)
+    and includes details such as the error message, reason, affected field,
+    and a documentation link.
+
+    Parameters
+    ----------
+    request : Request
+        The incoming request object.
+    exc : UnauthorizedError
+        The instance of TokenError raised.
+
+    Raises
+    ------
+    CustomHTTPException
+        Always raises a CustomHTTPException with a status code of 401 (Unauthorized).
+    """
+    logger.error("Handled unauthorized error. Exception details: %s", exc)
+    raise CustomHTTPException(
+        status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+        status=Status.UNAUTHORIZED,
+        message=str(exc),
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_401,
     ) from exc
 
 

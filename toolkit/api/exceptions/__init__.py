@@ -1,4 +1,15 @@
-from .custom_exceptions import DoesNotExistError as DoesNotExistError
-from .custom_exceptions import DuplicateResourceError as DuplicateResourceError
-from .custom_exceptions import TokenError as TokenError
-from .http_exceptions import CustomHTTPException as CustomHTTPException
+from .custom_exceptions import (
+    DoesNotExistError,
+    DuplicateResourceError,
+    TokenError,
+    UnauthorizedError,
+)
+from .http_exceptions import CustomHTTPException
+
+__all__ = [
+    "DoesNotExistError",
+    "DuplicateResourceError",
+    "TokenError",
+    "UnauthorizedError",
+    "CustomHTTPException",
+]

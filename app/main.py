@@ -19,6 +19,7 @@ from toolkit.api.exceptions import (
     DoesNotExistError,
     DuplicateResourceError,
     TokenError,
+    UnauthorizedError,
 )
 
 from .exception_handlers import (
@@ -29,6 +30,7 @@ from .exception_handlers import (
     otp_error_handler,
     request_validation_exception_handler,
     token_error_handler,
+    unauthorized_exception_handler,
 )
 from .healthcheck import router as health_check_router
 from .lifespan import lifespan
@@ -75,6 +77,10 @@ app.add_exception_handler(
 app.add_exception_handler(
     DuplicateResourceError,
     duplicate_resource_error_handler,  # type: ignore
+)
+app.add_exception_handler(
+    UnauthorizedError,
+    unauthorized_exception_handler,  # type: ignore
 )
 
 # Include routers
