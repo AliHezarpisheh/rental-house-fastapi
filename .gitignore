@@ -113,3 +113,4 @@ logs/
 
 ### Custom files for this specific project ###
 run.py
+**/.secrets/**
