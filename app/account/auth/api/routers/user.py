@@ -3,13 +3,21 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, status
-from pydantic import BeforeValidator
+from pydantic import BeforeValidator, EmailStr
 
-from app.account.auth.api.dependencies.services import get_user_service
+from app.account.auth.api.dependencies.services import (
+    get_token_service,
+    get_user_service,
+)
 from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.models import User
-from app.account.auth.repository.services import UserService
-from app.account.auth.schemas import UserLoginInput, UserOutput, UserRegisterInput
+from app.account.auth.repository.services import TokenService, UserService
+from app.account.auth.schemas import (
+    TokenOutput,
+    UserLoginInput,
+    UserOutput,
+    UserRegisterInput,
+)
 from toolkit.api.enums import HTTPStatusDoc, OpenAPITags, Status
 from toolkit.api.schemas.base import APIResponse
 
@@ -153,23 +161,21 @@ async def login(
     return result
 
 
-# @router.post(
-#     "/login/verify",
-#     status_code=status.HTTP_200_OK,
-#     response_model=APIResponse,
-#     response_model_exclude_none=True,
-# )
-# async def verify_login(
-#     email: Annotated[EmailStr, Body(embed=True, examples=["test@gmail.com"])],
-#     totp: Annotated[str, Body(embed=True, examples=["213957", 235092]), BeforeValidator(str)],
-#     user_service: Annotated[UserService, Depends(get_user_service)],
-#     token_service: Annotated[TokenService, Depends(get_token_Service)]
-# ) -> TokenOutput:
-#     user = await user_service.verify_authentication(email=email, totp=totp)
-#     if user:
-#         token_data = token_service.grant_token(user=user)
-#         return token_data
-#     return {
-#         "status": Status.FAILURE,
-#         "message": "hi",
-#     }
+@router.post(
+    "/login/verify",
+    status_code=status.HTTP_200_OK,
+    response_model=TokenOutput,
+    response_model_exclude_none=True,
+)
+async def verify_login(
+    email: Annotated[EmailStr, Body(embed=True, examples=["test@gmail.com"])],
+    totp: Annotated[
+        str, Body(embed=True, examples=["213957", 235092]), BeforeValidator(str)
+    ],
+    user_service: Annotated[UserService, Depends(get_user_service)],
+    token_service: Annotated[TokenService, Depends(get_token_service)],
+) -> dict[str, str]:
+    """Complete this."""  # TODO: Complete this endpoint.
+    user: User = await user_service.verify_authentication(email=email, totp=totp)
+    token_data = token_service.grant_token(user=user)
+    return token_data
