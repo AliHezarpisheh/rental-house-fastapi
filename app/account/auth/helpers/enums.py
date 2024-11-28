@@ -9,5 +9,9 @@ class AuthMessages(StrEnum):
     SUCCESS_REGISTER_MESSAGE = (
         "Registration successful. OTP has been sent to your email for verification."
     )
+    SUCCESS_LOGIN_MESSAGE = (
+        "Login successful. OTP has been sent to your email for verification."
+    )
     SUCCESS_VERIFICATION = "Your account has been verified successfully!"
     FAILED_VERIFICATION = "Invalid or expired OTP. Please try again."
+    INVALID_CREDENTIALS = "Invalid email or password."

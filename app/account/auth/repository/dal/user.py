@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from sqlalchemy import insert, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import insert, select, update
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from app.account.auth.helpers.exceptions import (
@@ -70,10 +70,20 @@ class UserDataAccessLayer:
             try:
                 result = await self.db_session.execute(stmt)
                 user = result.scalar_one()
+                return user
             except IntegrityError as exc:
                 await self.db_session.rollback()
                 self.handle_integrity_error(exc=exc)
-        return user
+
+    async def get_user_by_email(self, email: str) -> User:
+        stmt = select(User).where(User.email == email)
+
+        try:
+            result = await self.db_session.execute(stmt)
+            user = result.scalar_one()
+            return user
+        except NoResultFound as err:
+            self.handle_no_result_found_error(err)
 
     async def verify_user(self, user_id: int) -> None:
         """
@@ -115,3 +125,15 @@ class UserDataAccessLayer:
                 raise DuplicateUserError("User with this email already exists") from exc
         logger.warning("Unhandled Integrity error occurred. The error: %s", exc)
         raise exc
+
+    @staticmethod
+    def handle_no_result_found_error(exc: NoResultFound) -> NoReturn:
+        """
+        Handle no result found error.
+
+        Raises
+        ------
+        NoResultFound
+            If the user is not found.
+        """
+        raise UserDoesNotExistError("User does not exists.")

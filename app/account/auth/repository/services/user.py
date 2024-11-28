@@ -9,8 +9,10 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from app.account.auth.helpers.enums import AuthMessages
+from app.account.auth.helpers.exceptions import InvalidUserCredentials
 from app.account.auth.models import User
 from app.account.auth.schemas import UserRegisterInput
+from app.account.auth.schemas.user import UserLoginInput
 from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
 
@@ -72,11 +74,11 @@ class UserService:
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
         }
 
-    async def verify(
+    async def verify_registration(
         self, user_id: int, totp: str
-    ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
+    ) -> dict[str, Status | HTTPStatusDoc | AuthMessages]:
         """
-        Verify a user's account using OTP (TOTP).
+        Verify a user's account registration using OTP (TOTP).
 
         This method validates the provided OTP (TOTP) for the specified user.
         If the OTP is correct, the user's verification status is updated in the
@@ -112,6 +114,49 @@ class UserService:
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_400,
         }
 
+    async def authenticate(
+        self, user_input: UserLoginInput
+    ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
+        """
+        Authenticate a user and initiate OTP (TOTP) setup.
+
+        This method verifies the user's credentials, including email and password,
+        and generates an OTP for further authentication steps. If the credentials
+        are valid, the OTP is set for the user.
+
+        Parameters
+        ----------
+        user_input : UserLoginInput
+            An object containing the user's login details, including email and password.
+
+        Returns
+        -------
+        dict[str, User | Status | HTTPStatusDoc | AuthMessages]
+            A dictionary containing the login status, a message, the authenticated
+            user's data, and an optional documentation link describing the result of the
+            login process.
+
+        Raises
+        ------
+        InvalidUserCredentials
+            If the provided email or password is incorrect.
+        """
+        user = await self.user_dal.get_user_by_email(email=user_input.email)
+
+        is_password_valid = self.check_password(
+            password=user_input.password, hashed_password=user.hashed_password
+        )
+        if not is_password_valid:
+            raise InvalidUserCredentials(AuthMessages.INVALID_CREDENTIALS)
+
+        await self.totp_service.set_otp(user_id=user.id)
+        return {
+            "status": Status.SUCCESS,
+            "message": AuthMessages.SUCCESS_LOGIN_MESSAGE,
+            "data": user,
+            "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
+        }
+
     def hash_password(self, password: str) -> str:
         """
         Hash the user's password.
@@ -134,3 +179,10 @@ class UserService:
             salt=salt,
         )
         return hashed_password.decode("utf-8")
+
+    def check_password(self, password: str, hashed_password: str) -> bool:
+        is_valid = bcrypt.checkpw(
+            password=password.encode("utf-8"),
+            hashed_password=hashed_password.encode("utf-8"),
+        )
+        return is_valid
