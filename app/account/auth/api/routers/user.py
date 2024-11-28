@@ -3,7 +3,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, status
-from pydantic import BeforeValidator, EmailStr
+from pydantic import BeforeValidator
 
 from app.account.auth.api.dependencies.services import get_user_service
 from app.account.auth.helpers.enums import AuthMessages
