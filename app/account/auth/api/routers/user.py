@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, status
+from fastapi import APIRouter, Body, Depends, status
 from pydantic import BeforeValidator, EmailStr
 
 from app.account.auth.api.dependencies.services import (
@@ -14,7 +14,7 @@ from app.account.auth.models import User
 from app.account.auth.repository.services import TokenService, UserService
 from app.account.auth.schemas import (
     TokenOutput,
-    UserLoginInput,
+    UserAuthenticateInput,
     UserOutput,
     UserRegisterInput,
 )
@@ -69,13 +69,13 @@ async def register(
 
 
 @router.post(
-    "/{user_id}/register/verify",
+    "/register/verify",
     status_code=status.HTTP_200_OK,
     response_model=APIResponse,
     response_model_exclude_none=True,
 )
 async def verify_user_registration(
-    user_id: Annotated[int, Path()],
+    email: Annotated[EmailStr, Body(embed=True, examples=["test@gmail.com"])],
     totp: Annotated[
         str, Body(embed=True, examples=["213957", 235092]), BeforeValidator(str)
     ],
@@ -88,14 +88,14 @@ async def verify_user_registration(
     the user's account with the provided TOTP. Once verified, the user
     can access their account and associated services.
 
-    - **user_id**: The unique identifier of the user to be verified.
+    - **email**: The user's email address.
     - **totp**: A six-digit TOTP sent to the user's registered contact (e.g., email).
 
     \f
     Parameters
     ----------
-    user_id : int
-        The unique identifier of the user to be verified.
+    email : EmailStr
+        The email address of the user requesting verification.
     totp : str
         The Time-based One-Time Password (TOTP) provided by the user.
     user_service : UserService
@@ -112,26 +112,26 @@ async def verify_user_registration(
     - The TOTP must be valid and within the defined time window.
     - Users need to provide the exact TOTP sent to their registered contact.
     """
-    result = await user_service.verify_registration(user_id=user_id, totp=totp)
+    result = await user_service.verify_registration(email=email, totp=totp)
     return result
 
 
 @router.post(
-    "/login",
+    "/authenticate",
     status_code=status.HTTP_200_OK,
     response_model=UserOutput,
     response_model_exclude_none=True,
 )
-async def login(
-    user_input: UserLoginInput,
+async def authenticate(
+    user_input: UserAuthenticateInput,
     user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
     """
     Authenticate a user through the user's credentials.
 
-    This endpoint validates the user's login credentials (e.g., email and password)
+    This endpoint validates the user's credentials (e.g., email and password)
     and returns the user's profile information upon successful authentication. The token
-    is accessible after verifying the login, through sending the otp and verification of
+    is accessible after verifying the auth, through sending the otp and verification of
     the otp.
 
     - **username**: Unique identifier for the user.
@@ -140,8 +140,8 @@ async def login(
     \f
     Parameters
     ----------
-    user_input : UserLoginInput
-        The input data containing the user's login credentials.
+    user_input : UserAuthenticateInput
+        The input data containing the user's credentials.
     user_service : UserService
         A service dependency for performing user authentication.
 
@@ -155,14 +155,14 @@ async def login(
     -----
     - The credentials are validated against stored user data.
     - If authentication fails, an appropriate error message will be returned.
-    - Upon successful login, the user has to verify the login through otp verification.
+    - Upon successful login, the user has to verify the auth through otp verification.
     """
     result = await user_service.authenticate(user_input=user_input)
     return result
 
 
 @router.post(
-    "/login/verify",
+    "/authenticate/verify",
     status_code=status.HTTP_200_OK,
     response_model=TokenOutput,
     response_model_exclude_none=True,

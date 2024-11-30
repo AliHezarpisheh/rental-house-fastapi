@@ -1,4 +1,4 @@
 from .token import TokenOutput
-from .user import UserLoginInput, UserOutput, UserRegisterInput
+from .user import UserAuthenticateInput, UserOutput, UserRegisterInput
 
-__all__ = ["UserRegisterInput", "UserLoginInput", "UserOutput", "TokenOutput"]
+__all__ = ["UserRegisterInput", "UserAuthenticateInput", "UserOutput", "TokenOutput"]

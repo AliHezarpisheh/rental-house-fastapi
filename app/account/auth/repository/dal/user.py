@@ -97,11 +97,16 @@ class UserDataAccessLayer:
         UserDoesNotExistError
             If no user with the specified email exists in the database.
         """
-        stmt = select(User).where(User.email == email)
+        stmt = select(User).where(
+            User.email == email,
+            User.is_verified == True,  # noqa: E712
+            User.is_active == True,  # noqa: E712
+        )
 
         try:
-            result = await self.db_session.execute(stmt)
-            user = result.scalar_one()
+            async with self.db_session.begin():
+                result = await self.db_session.execute(stmt)
+                user = result.scalar_one()
             return user
         except NoResultFound as err:
             self.handle_no_result_found_error(err)

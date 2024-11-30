@@ -12,7 +12,7 @@ from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.helpers.exceptions import InvalidUserCredentials
 from app.account.auth.models import User
 from app.account.auth.schemas import UserRegisterInput
-from app.account.auth.schemas.user import UserLoginInput
+from app.account.auth.schemas.user import UserAuthenticateInput
 from app.account.otp.helpers.exceptions import TotpVerificationFailedError
 from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
@@ -76,7 +76,7 @@ class UserService:
         }
 
     async def verify_registration(
-        self, user_id: int, totp: str
+        self, email: str, totp: str
     ) -> dict[str, Status | HTTPStatusDoc | AuthMessages]:
         """
         Verify a user's account registration using OTP (TOTP).
@@ -87,8 +87,8 @@ class UserService:
 
         Parameters
         ----------
-        user_id : int
-            The ID of the user to be verified.
+        email : str
+            The email of the user attempting verification.
         totp : str
             The OTP (TOTP) provided by the user for verification.
 
@@ -98,11 +98,13 @@ class UserService:
             A dictionary containing the status, a message, and an optional
             documentation link describing the result of the verification process.
         """
+        user = await self.user_dal.get_user_by_email(email=email)
+
         otp_verification_result = await self.totp_service.verify_totp(
-            user_id=user_id, totp=totp
+            user_id=user.id, totp=totp
         )
         if otp_verification_result.get("status") == Status.SUCCESS:
-            await self.user_dal.verify_user(user_id=user_id)
+            await self.user_dal.verify_user(user_id=user.id)
             return {
                 "status": Status.SUCCESS,
                 "message": AuthMessages.SUCCESS_VERIFICATION,
@@ -116,7 +118,7 @@ class UserService:
         }
 
     async def authenticate(
-        self, user_input: UserLoginInput
+        self, user_input: UserAuthenticateInput
     ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
         """
         Authenticate a user and initiate OTP (TOTP) setup.
@@ -127,7 +129,7 @@ class UserService:
 
         Parameters
         ----------
-        user_input : UserLoginInput
+        user_input : UserAuthenticateInput
             An object containing the user's login details, including email and password.
 
         Returns

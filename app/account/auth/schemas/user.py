@@ -18,7 +18,7 @@ class UserRegisterInput(BaseSchema):
     password: str
 
 
-class UserLoginInput(BaseSchema):
+class UserAuthenticateInput(BaseSchema):
     """Input schema for user login."""
 
     email: EmailStr
