@@ -175,7 +175,44 @@ async def verify_login(
     user_service: Annotated[UserService, Depends(get_user_service)],
     token_service: Annotated[TokenService, Depends(get_token_service)],
 ) -> dict[str, str]:
-    """Complete this."""  # TODO: Complete this endpoint.
+    """
+    Verify a user's authentication and issue an access token.
+
+    This endpoint verifies the user's identity using their email and a Time-based
+    One-Time Password (TOTP). Upon successful verification, it grants the user an
+    access token for subsequent authenticated requests.
+
+    - **email**: The user's email address.
+    - **totp**: A 6-digit TOTP used for verification.
+
+    \f
+    Parameters
+    ----------
+    email : EmailStr
+        The email address of the user requesting verification.
+    totp : str
+        The Time-based One-Time Password provided by the user.
+    user_service : UserService
+        Service used to perform authentication checks for the user.
+    token_service : TokenService
+        Service used to issue access tokens upon successful authentication.
+
+    Returns
+    -------
+    dict[str, str]
+        A dictionary containing:
+        - `access_token`: The access token for the user.
+        - `type`: The token type (e.g., "Bearer").
+
+    Notes
+    -----
+    - The `verify_authentication` method checks the email and TOTP against stored
+      user data and current OTP validity.
+    - The `grant_token` method generates an access token for the user upon successful
+      authentication.
+    - This endpoint is part of a multi-step authentication process and ensures that
+      only verified users are granted access tokens.
+    """
     user: User = await user_service.verify_authentication(email=email, totp=totp)
     token_data = token_service.grant_token(user=user)
     return token_data
