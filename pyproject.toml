@@ -77,7 +77,7 @@ include_trailing_comma = true
 strict = true
 ignore_missing_imports = true
 
-plugins = "sqlalchemy.ext.mypy.plugin"
+plugins = ["sqlalchemy.ext.mypy.plugin", "pydantic.mypy"]
 
 exclude = "tests/"
 
