@@ -12,7 +12,7 @@ import jwt
 from app.account.auth.models import User
 from app.account.auth.schemas.token import JwtClaims
 from config.base import logger, settings
-from toolkit.api.exceptions import TokenError
+from toolkit.api.exceptions import ForbiddenError
 
 
 class TokenService:
@@ -36,7 +36,7 @@ class TokenService:
 
         Raises
         ------
-        TokenError
+        ForbiddenError
             If an internal error occurs during token encoding.
         """
         assert settings.jwt_private_key is not None, "JWT private key is not set."
@@ -49,7 +49,7 @@ class TokenService:
             )
         except TypeError as err:
             logger.error("Couldn't encode the jwt.", exc_info=True)
-            raise TokenError(
+            raise ForbiddenError(
                 "Internal error generating token. Check the logs for more info."
             ) from err
 

@@ -12,7 +12,7 @@ from toolkit.api.exceptions import (
     CustomHTTPException,
     DoesNotExistError,
     DuplicateResourceError,
-    TokenError,
+    ForbiddenError,
     UnauthorizedError,
 )
 
@@ -173,7 +173,7 @@ async def unauthorized_exception_handler(
     request : Request
         The incoming request object.
     exc : UnauthorizedError
-        The instance of TokenError raised.
+        The instance of UnauthorizedError raised.
 
     Raises
     ------
@@ -189,13 +189,13 @@ async def unauthorized_exception_handler(
     ) from exc
 
 
-async def token_error_handler(request: Request, exc: TokenError) -> None:
+async def forbidden_error_handler(request: Request, exc: ForbiddenError) -> None:
     """
-    Handle TokenError by raising a CustomHTTPException with details.
+    Handle ForbiddenError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    TokenError exceptions raised within FastAPI routes.
-    It raises a CustomHTTPException with a status code of 401 (Unauthorized)
+    ForbiddenError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of 403 (Forbidden)
     and includes details such as the error message, reason, affected field,
     and a documentation link.
 
@@ -203,17 +203,17 @@ async def token_error_handler(request: Request, exc: TokenError) -> None:
     ----------
     request : Request
         The incoming request object.
-    exc : TokenError
-        The instance of TokenError raised.
+    exc : ForbiddenError
+        The instance of ForbiddenError raised.
 
     Raises
     ------
     CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 401 (Unauthorized).
+        Always raises a CustomHTTPException with a status code of 403 (Unauthorized).
     """
     logger.error("Handle base token exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
+        status_code=fastapi.status.HTTP_403_FORBIDDEN,
         status=Status.FORBIDDEN,
         message=str(exc),
         documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
@@ -222,10 +222,10 @@ async def token_error_handler(request: Request, exc: TokenError) -> None:
 
 async def otp_error_handler(request: Request, exc: OtpError) -> None:
     """
-    Handle TokenError by raising a CustomHTTPException with details.
+    Handle OtpError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    TokenError exceptions raised within FastAPI routes.
+    OtpError exceptions raised within FastAPI routes.
     It raises a CustomHTTPException with a status code of 403 (Forbidden)
     and includes details such as the error message, reason, affected field,
     and a documentation link.

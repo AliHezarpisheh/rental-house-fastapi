@@ -15,3 +15,7 @@ class AuthMessages(StrEnum):
     SUCCESS_VERIFICATION = "Your account has been verified successfully!"
     FAILED_VERIFICATION = "Invalid or expired OTP. Please try again."
     INVALID_CREDENTIALS = "Invalid email or password."
+    TOKEN_EXPIRATION = "Token has expired. Please log in again to obtain a new token."
+    UNAUTHORIZED_MESSAGE = (
+        "Token is not valid. Please log in again to obtain a new token."
+    )

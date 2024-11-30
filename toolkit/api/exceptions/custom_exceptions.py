@@ -5,7 +5,7 @@ class UnauthorizedError(Exception):
     """Base class raised when an unauthenticated access occurred."""
 
 
-class TokenError(Exception):
+class ForbiddenError(Exception):
     """Base class for token-related exceptions."""
 
 
