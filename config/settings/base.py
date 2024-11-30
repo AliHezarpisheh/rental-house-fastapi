@@ -85,6 +85,12 @@ class Settings(BaseSettings):
         RSAPublicKey | None,
         Field(..., description="The jwt public key, loaded from the public key file."),
     ] = None
+    jwt_lifetime_minutes: Annotated[
+        int, Field(..., description="The jwt lifetime in minutes.")
+    ]
+    jwt_refresh_token_lifetime_days: Annotated[
+        int, Field(..., description="The jwt refresh token lifetime in days.")
+    ]
     origins: Annotated[
         list[str], Field(..., description="List of allowed API origins.")
     ]
