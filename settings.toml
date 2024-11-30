@@ -1,4 +1,4 @@
-# These settings and configurations are consistent accross different environments.
+# These settings and configurations are consistent across different environments.
 # Inconsistent and secret settings and configurations should be placed in the .env files,
 # using the .env.example files.
 
