@@ -6,7 +6,7 @@ from .redis import AsyncRedisConnection
 from .settings.base import Settings
 
 # Settings
-settings = Settings()  # type: ignore
+settings = Settings()
 
 # Logging
 logger = LoggingConfig(env=settings.env).get_logger()
