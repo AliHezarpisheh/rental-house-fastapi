@@ -1,9 +1,11 @@
 """Module defines schemas for tokens."""
 
+import uuid
+from datetime import datetime
 from typing import Literal
 
 import pydantic
-from pydantic.types import UUID4
+from pydantic import Field
 
 from toolkit.api.schemas import BaseSchema
 
@@ -12,13 +14,13 @@ from toolkit.api.schemas import BaseSchema
 class JwtClaims:
     """Pydantic dataclass representing JWT claims."""
 
-    issue: str
-    sub: str
-    aud: str
-    iat: int
-    nbf: int
-    exp: int
-    jti: UUID4
+    sub: int
+    aud: list[str] | str
+    iat: datetime
+    nbf: datetime
+    exp: datetime
+    jti: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    issue: str = "rental_house_fastapi"
 
 
 class TokenOutput(BaseSchema):
