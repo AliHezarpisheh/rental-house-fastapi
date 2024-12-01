@@ -5,6 +5,7 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
+from app.account.auth.helpers.exceptions import TokenError
 from app.account.otp.helpers.exceptions import OtpError
 from config.base import logger
 from toolkit.api.enums import HTTPStatusDoc, Messages, Status
@@ -12,7 +13,6 @@ from toolkit.api.exceptions import (
     CustomHTTPException,
     DoesNotExistError,
     DuplicateResourceError,
-    ForbiddenError,
     UnauthorizedError,
 )
 
@@ -43,6 +43,41 @@ async def custom_http_exception_handler(
             "message": exc.message,
             "details": exc.details,
             "documentation_link": exc.documentation_link.value,
+        },
+    )
+
+
+async def internal_exception_handler(
+    request: Request, exc: Exception
+) -> ORJSONResponse:
+    """
+    Handle unexpected internal server errors by raising a CustomHTTPException.
+
+    This function is an exception handler for any general Python exceptions
+    that may arise within FastAPI routes. It catches unhandled exceptions and
+    raises a CustomHTTPException with a status code of 500 (Internal Server Error),
+    providing a generic error message and documentation link.
+
+    Parameters
+    ----------
+    request : Request
+        The incoming request object.
+    exc : Exception
+        The general Python exception instance raised.
+
+    Raises
+    ------
+    CustomHTTPException
+        Always raises a CustomHTTPException with a status code of 500
+        (Internal Server Error).
+    """
+    logger.error("Handle general base python exception. Exception details: %s", exc)
+    return ORJSONResponse(
+        status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "status": Status.ERROR,
+            "message": Messages.INTERNAL_SERVER_ERROR,
+            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
         },
     )
 
@@ -88,50 +123,13 @@ async def request_validation_exception_handler(
     ) from exc
 
 
-async def internal_exception_handler(
-    request: Request, exc: Exception
-) -> ORJSONResponse:
+async def token_error_handler(request: Request, exc: TokenError) -> None:
     """
-    Handle unexpected internal server errors by raising a CustomHTTPException.
-
-    This function is an exception handler for any general Python exceptions
-    that may arise within FastAPI routes. It catches unhandled exceptions and
-    raises a CustomHTTPException with a status code of 500 (Internal Server Error),
-    providing a generic error message and documentation link.
-
-    Parameters
-    ----------
-    request : Request
-        The incoming request object.
-    exc : Exception
-        The general Python exception instance raised.
-
-    Raises
-    ------
-    CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 500
-        (Internal Server Error).
-    """
-    logger.error("Handle general base python exception. Exception details: %s", exc)
-    return ORJSONResponse(
-        status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "status": Status.ERROR,
-            "message": Messages.INTERNAL_SERVER_ERROR,
-            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
-        },
-    )
-
-
-async def does_not_exist_exception_handler(
-    request: Request, exc: DoesNotExistError
-) -> None:
-    """
-    Handle DoesNotExistError by raising a CustomHTTPException with details.
+    Handle TokenError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    DoesNotExistError exceptions and its children raised within FastAPI routes.
-    It raises a CustomHTTPException with a status code of 404 (Not Found)
+    TokenError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of the exception
     and includes details such as the error message, reason, affected field,
     and a documentation link.
 
@@ -139,20 +137,51 @@ async def does_not_exist_exception_handler(
     ----------
     request : Request
         The incoming request object.
-    exc : DoesNotExistError
-        The instance of DoesNotExistError raised.
+    exc : TokenError
+        The instance of TokenError raised.
 
     Raises
     ------
     CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 404 (Not Found).
+        Always raises a CustomHTTPException with a status code of the exception.
     """
-    logger.error("Handled does not exist exception. Exception details: %s", exc)
+    logger.error("Handle base token exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=fastapi.status.HTTP_404_NOT_FOUND,
-        status=Status.NOT_FOUND,
+        status_code=exc.status_code,
+        status=exc.status,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.HTTP_STATUS_404,
+        documentation_link=exc.http_status_doc,
+    ) from exc
+
+
+async def otp_error_handler(request: Request, exc: OtpError) -> None:
+    """
+    Handle OtpError by raising a CustomHTTPException with details.
+
+    This function is an exception handler specifically designed to handle
+    OtpError exceptions raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of the exception
+    and includes details such as the error message, reason, affected field,
+    and a documentation link.
+
+    Parameters
+    ----------
+    request : Request
+        The incoming request object.
+    exc : OtpError
+        The instance of OtpError raised.
+
+    Raises
+    ------
+    CustomHTTPException
+        Always raises a CustomHTTPException with a status code of the exception.
+    """
+    logger.error("Handle base otp exception. Exception details: %s", exc)
+    raise CustomHTTPException(
+        status_code=exc.status_code,
+        status=exc.status,
+        message=str(exc),
+        documentation_link=exc.http_status_doc,
     ) from exc
 
 
@@ -189,13 +218,15 @@ async def unauthorized_exception_handler(
     ) from exc
 
 
-async def forbidden_error_handler(request: Request, exc: ForbiddenError) -> None:
+async def does_not_exist_exception_handler(
+    request: Request, exc: DoesNotExistError
+) -> None:
     """
-    Handle ForbiddenError by raising a CustomHTTPException with details.
+    Handle DoesNotExistError by raising a CustomHTTPException with details.
 
     This function is an exception handler specifically designed to handle
-    ForbiddenError exceptions raised within FastAPI routes.
-    It raises a CustomHTTPException with a status code of 403 (Forbidden)
+    DoesNotExistError exceptions and its children raised within FastAPI routes.
+    It raises a CustomHTTPException with a status code of 404 (Not Found)
     and includes details such as the error message, reason, affected field,
     and a documentation link.
 
@@ -203,51 +234,20 @@ async def forbidden_error_handler(request: Request, exc: ForbiddenError) -> None
     ----------
     request : Request
         The incoming request object.
-    exc : ForbiddenError
-        The instance of ForbiddenError raised.
+    exc : DoesNotExistError
+        The instance of DoesNotExistError raised.
 
     Raises
     ------
     CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 403 (Unauthorized).
+        Always raises a CustomHTTPException with a status code of 404 (Not Found).
     """
-    logger.error("Handle base token exception. Exception details: %s", exc)
+    logger.error("Handled does not exist exception. Exception details: %s", exc)
     raise CustomHTTPException(
-        status_code=fastapi.status.HTTP_403_FORBIDDEN,
-        status=Status.FORBIDDEN,
+        status_code=fastapi.status.HTTP_404_NOT_FOUND,
+        status=Status.NOT_FOUND,
         message=str(exc),
-        documentation_link=HTTPStatusDoc.HTTP_STATUS_403,
-    ) from exc
-
-
-async def otp_error_handler(request: Request, exc: OtpError) -> None:
-    """
-    Handle OtpError by raising a CustomHTTPException with details.
-
-    This function is an exception handler specifically designed to handle
-    OtpError exceptions raised within FastAPI routes.
-    It raises a CustomHTTPException with a status code of 403 (Forbidden)
-    and includes details such as the error message, reason, affected field,
-    and a documentation link.
-
-    Parameters
-    ----------
-    request : Request
-        The incoming request object.
-    exc : OtpError
-        The instance of OtpError raised.
-
-    Raises
-    ------
-    CustomHTTPException
-        Always raises a CustomHTTPException with a status code of 403 (Forbidden).
-    """
-    logger.error("Handle base otp exception. Exception details: %s", exc)
-    raise CustomHTTPException(
-        status_code=exc.status_code,
-        status=exc.status,
-        message=str(exc),
-        documentation_link=exc.http_status_doc,
+        documentation_link=HTTPStatusDoc.HTTP_STATUS_404,
     ) from exc
 
 

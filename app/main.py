@@ -10,6 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
 from app.account.auth.api.routers.user import router as users_router
+from app.account.auth.helpers.exceptions import TokenError
 from app.account.otp.api.routers.otp import router as otp_router
 from app.account.otp.helpers.exceptions import OtpError
 from config.base import settings
@@ -18,7 +19,6 @@ from toolkit.api.exceptions import (
     CustomHTTPException,
     DoesNotExistError,
     DuplicateResourceError,
-    ForbiddenError,
     UnauthorizedError,
 )
 
@@ -26,10 +26,10 @@ from .exception_handlers import (
     custom_http_exception_handler,
     does_not_exist_exception_handler,
     duplicate_resource_error_handler,
-    forbidden_error_handler,
     internal_exception_handler,
     otp_error_handler,
     request_validation_exception_handler,
+    token_error_handler,
     unauthorized_exception_handler,
 )
 from .healthcheck import router as health_check_router
@@ -67,8 +67,8 @@ app.add_exception_handler(
     does_not_exist_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
-    ForbiddenError,
-    forbidden_error_handler,  # type: ignore
+    TokenError,
+    token_error_handler,  # type: ignore
 )
 app.add_exception_handler(
     OtpError,
