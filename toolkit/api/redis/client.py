@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 from fastapi import status
 from redis.asyncio import Redis, RedisError
 
-from config.base import logger, redis_connection
+from config.base import logger, redis_manager
 from toolkit.api.enums import HTTPStatusDoc, Messages, Status
 from toolkit.api.exceptions import CustomHTTPException
 
@@ -41,7 +41,7 @@ Annotated[Redis, Depends(get_redis_client)]):  # noqa: E501
             pass
     """
     try:
-        redis_client = redis_connection.get_connection()
+        redis_client = redis_manager.get_connection()
         yield redis_client
     except CustomHTTPException:
         raise

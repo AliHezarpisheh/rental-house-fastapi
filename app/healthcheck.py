@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, status
 from pydantic import BaseModel
 
-from config.base import db, redis_connection
+from config.base import db, redis_manager
 from toolkit.api.enums import HTTPStatusDoc, Status
 from toolkit.api.exceptions import CustomHTTPException
 
@@ -57,7 +57,7 @@ async def check_health() -> Any:
             message="Database not available",
             documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
         )
-    is_redis_available = await redis_connection.test_connection()
+    is_redis_available = await redis_manager.test_connection()
     if not is_redis_available:
         raise CustomHTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
