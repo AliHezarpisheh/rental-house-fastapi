@@ -124,16 +124,24 @@ class Settings(BaseSettings):
         AssertionError
             If the loaded key is not an instance of `RSAPrivateKey`.
         """
-        private_key_path = info.data["jwt_private_key_path"]
-        keys_passphrase = info.data["jwt_keys_passphrase"]
+        try:
+            private_key_path = info.data["jwt_private_key_path"]
+            keys_passphrase = info.data["jwt_keys_passphrase"]
+        except KeyError:
+            raise RuntimeError(
+                "Failed to load the application settings, fix the `.env` file and "
+                "check for the `jwt_private_key_path` and `jwt_keys_passphrase` keys."
+            )
+
         path = Path(private_key_path)
         if not path.exists():
             raise RuntimeError(
-                "The private and public keys are not generated yet. Try to generate"
-                f"keys in the {private_key_path} path, using the command"
-                f"ssh-keygen -t rsa -b 2048 -f {private_key_path}\n"
-                "Make sure that you set the correct passphrase for the files according"
-                "to the .env files."
+                "The private and public keys are not generated yet. Try to generate "
+                f"keys in the {private_key_path} path, using the command "
+                f"`ssh-keygen -t rsa -b 2048 -f {private_key_path}`\n"
+                "Make sure that you set the correct passphrase for the files according "
+                "to the .env files.\n"
+                "You can read `docs/security/create_jwt_keys` for clear instructions."
             )
 
         with path.open("rb") as key_file:
@@ -174,15 +182,23 @@ class Settings(BaseSettings):
         AssertionError
             If the loaded key is not an instance of `RSAPublicKey`.
         """
-        public_key_path = info.data["jwt_public_key_path"]
+        try:
+            public_key_path = info.data["jwt_public_key_path"]
+        except KeyError:
+            raise RuntimeError(
+                "Failed to load the application settings, fix the `.env` file and "
+                "check for the `jwt_public_key_path` key."
+            )
+
         path = Path(public_key_path)
         if not path.exists():
             raise RuntimeError(
-                "The private and public keys are not generated yet. Try to generate"
-                f"keys in the {public_key_path} path, using the command"
-                f"ssh-keygen -t rsa -b 2048 -f {public_key_path}\n"
-                "Make sure that you set the correct passphrase for the files according"
-                "to the .env files."
+                "The private and public keys are not generated yet. Try to generate "
+                f"keys in the {public_key_path} path, using the command "
+                f"`ssh-keygen -t rsa -b 2048 -f {public_key_path}`\n"
+                "Make sure that you set the correct passphrase for the files according "
+                "to the .env files.\n"
+                "You can read `docs/security/create_jwt_keys` for clear instructions."
             )
 
         with path.open("rb") as key_file:
