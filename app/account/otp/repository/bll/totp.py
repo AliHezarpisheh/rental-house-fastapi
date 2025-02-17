@@ -16,14 +16,14 @@ from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger
 
 
-class TOTPBusinessLogicLayer:
+class TotpBusinessLogicLayer:
     """Business logic layer for TOTP-related operations."""
 
     MAX_VERIFY_ATTEMPTS = 5  # Every user can only attempt 5 times for verifying an OTP.
 
     def __init__(self, redis_client: Redis) -> None:
         """
-        Initialize the `TOTPBusinessLogicLayer`.
+        Initialize the `TotpBusinessLogicLayer`.
 
         Parameters
         ----------
@@ -33,14 +33,14 @@ class TOTPBusinessLogicLayer:
         self.redis_client = redis_client
         self.totp_dal = TotpDataAccessLayer(redis_client=self.redis_client)
 
-    async def set_totp(self, user_id: int, hashed_totp: str) -> bool:
+    async def set_totp(self, email: str, hashed_totp: str) -> bool:
         """
         Set a new TOTP for a user, ensuring no existing active TOTP.
 
         Parameters
         ----------
-        user_id : int
-            The ID of the user.
+        email : str
+            The email of the user.
         hashed_totp : str
             The hashed TOTP value to be set.
 
@@ -54,14 +54,14 @@ class TOTPBusinessLogicLayer:
         TotpAlreadySetError
             If the user already has an active TOTP.
         """
-        if await self.totp_dal.check_totp(user_id=user_id):
-            logger.debug("TOTP already set for user_id: %d", user_id)
+        if await self.totp_dal.check_totp(email=email):
+            logger.debug("totp already set for email: %s", email)
             raise TotpAlreadySetError("User already has an active TOTP.")
 
-        logger.debug("Setting new TOTP for user_id: %d", user_id)
-        return await self.totp_dal.set_totp(user_id=user_id, hashed_totp=hashed_totp)
+        logger.debug("Setting new totp for email: %s", email)
+        return await self.totp_dal.set_totp(email=email, hashed_totp=hashed_totp)
 
-    async def verify_totp(self, user_id: int, totp: str) -> bool:
+    async def verify_totp(self, email: str, totp: str) -> bool:
         """
         Verify the TOTP for a user and delete it upon successful verification.
 
@@ -72,8 +72,8 @@ class TOTPBusinessLogicLayer:
 
         Parameters
         ----------
-        user_id : int
-            The ID of the user.
+        email : str
+            The email of the user.
         totp : str
             The TOTP provided by the user for verification.
 
@@ -83,27 +83,26 @@ class TOTPBusinessLogicLayer:
             True if the TOTP was successfully verified, False otherwise.
         """
         # Rate limit user OTP verification.
-        logger.debug("Checking user attempts for verifying otp, user_id: %d", user_id)
+        logger.debug("Checking user attempts for verifying totp, email: %s", email)
 
-        user_attempts = await self.totp_dal.get_attempts(user_id=user_id)
+        user_attempts = await self.totp_dal.get_attempts(email=email)
         if user_attempts >= self.MAX_VERIFY_ATTEMPTS:
             raise TotpVerificationAttemptsLimitError(
                 "Too much requests for verifying OTP."
             )
 
         # Check OTP hash and validate it.
-        logger.debug("Verifying TOTP for user_id: %d", user_id)
-
-        hashed_totp = await self.totp_dal.get_totp(user_id=user_id)
+        logger.debug("Verifying TOTP for email: %s", email)
+        hashed_totp = await self.totp_dal.get_totp(email=email)
 
         # Increment user attempt for verifying the OTP.
-        await self.totp_dal.increment_attempts(user_id=user_id)
+        await self.totp_dal.increment_attempts(email=email)
 
         # Verify the OTP hash.
         is_verified = bcrypt.checkpw(totp.encode("utf-8"), hashed_totp.encode("utf-8"))
 
         # If the user is verified, the OTP should be deleted from the storage.
         if is_verified:
-            logger.debug("TOTP verified, deleting for user_id: %d", user_id)
-            await self.totp_dal.delete_totp(user_id=user_id)
+            logger.debug("TOTP verified, deleting for email: %s", email)
+            await self.totp_dal.delete_totp(email=email)
         return is_verified

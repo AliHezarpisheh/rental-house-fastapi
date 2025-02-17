@@ -10,7 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from redis.asyncio import Redis
 
 from app.account.otp.helpers.exceptions import TotpVerificationFailedError
-from app.account.otp.repository.bll import TOTPBusinessLogicLayer
+from app.account.otp.repository.bll import TotpBusinessLogicLayer
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from config.base import logger, settings
 from toolkit.api.enums import HTTPStatusDoc, Status
@@ -33,67 +33,67 @@ class TotpService:
             pyotp.random_base32(), interval=settings.otp_ttl, digits=settings.otp_digits
         )
         self.totp_dal = TotpDataAccessLayer(redis_client=self.redis_client)
-        self.totp_bll = TOTPBusinessLogicLayer(redis_client=self.redis_client)
+        self.totp_bll = TotpBusinessLogicLayer(redis_client=self.redis_client)
 
-    async def set_otp(self, user_id: int) -> dict[str, str]:
+    async def set_totp(self, email: str) -> dict[str, str]:
         """
-        Set a new OTP for the user.
+        Set a new TOTP for the user.
 
         Parameters
         ----------
-        user_id : int
-            The ID of the user for whom to set the OTP.
+        email : str
+            The email of the user for whom to set the OTP.
 
         Returns
         -------
         dict[str, str]
             A dictionary containing the status, message, and documentation link.
         """
-        totp = self._create_totp()
+        totp = self._generate_totp()
         hashed_totp = await run_in_threadpool(self._hash_totp, totp=totp)
 
-        if await self.totp_bll.set_totp(user_id=user_id, hashed_totp=hashed_totp):
-            logger.info("OTP successfully set for user_id: %d", user_id)
+        if await self.totp_bll.set_totp(email=email, hashed_totp=hashed_totp):
+            logger.info("OTP successfully set for email: %s", email)
             return {
                 "status": Status.CREATED,
-                "message": "OTP sent successfully.",
+                "message": "TOTP sent successfully.",
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
             }
 
         return {
             "status": Status.FAILURE,
-            "message": "Failed to set OTP. Contact support.",
+            "message": "Failed to set TOTP. Contact support.",
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
         }
 
-    async def verify_totp(self, user_id: int, totp: str) -> dict[str, str]:
+    async def verify_totp(self, email: str, totp: str) -> dict[str, str]:
         """
-        Verify the OTP for the user.
+        Verify the TOTP for the user.
 
         Parameters
         ----------
-        user_id : int
-            The ID of the user whose OTP needs to be verified.
+        email : str
+            The email of the user whose TOTP needs to be verified.
         totp : str
-            The OTP to be verified.
+            The TOTP to be verified.
 
         Returns
         -------
         dict[str, str]
             A dictionary containing the status, message, and documentation link.
         """
-        if await self.totp_bll.verify_totp(user_id=user_id, totp=totp):
+        if await self.totp_bll.verify_totp(email=email, totp=totp):
             return {
                 "status": Status.SUCCESS,
-                "message": "OTP verified successfully.",
+                "message": "TOTP verified successfully.",
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
             }
 
         raise TotpVerificationFailedError("Incorrect OTP.")
 
-    def _create_totp(self) -> str:
+    def _generate_totp(self) -> str:
         """
-        Create a new TOTP.
+        Generate a new TOTP.
 
         Returns
         -------

@@ -1,3 +1,3 @@
-from .totp import TOTPBusinessLogicLayer
+from .totp import TotpBusinessLogicLayer
 
-__all__ = ["TOTPBusinessLogicLayer"]
+__all__ = ["TotpBusinessLogicLayer"]

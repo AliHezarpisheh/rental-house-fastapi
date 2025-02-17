@@ -8,9 +8,9 @@ from toolkit.api.enums import HTTPStatusDoc, Status
 class OtpError(Exception):
     """Base exception for OTP-related errors."""
 
-    status_code = fastapi.status.HTTP_400_BAD_REQUEST
+    status_code = fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR
     status = Status.FAILURE
-    http_status_doc = HTTPStatusDoc.HTTP_STATUS_400
+    http_status_doc = HTTPStatusDoc.HTTP_STATUS_500
 
 
 class TotpError(OtpError):
@@ -35,6 +35,10 @@ class TotpRemovalFailedError(TotpError):
 
 class TotpAlreadySetError(TotpError):
     """Exception raised when attempting to set an already existing TOTP."""
+
+    status_code = fastapi.status.HTTP_400_BAD_REQUEST
+    status = Status.FAILURE
+    http_status_doc = HTTPStatusDoc.HTTP_STATUS_400
 
 
 class TotpAttemptsIncriminationError(TotpError):

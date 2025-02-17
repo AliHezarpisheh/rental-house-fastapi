@@ -1,4 +1,4 @@
-"""Module containing dependency services for the otp API."""
+"""Module containing dependency functions for the totp API."""
 
 from typing import Annotated
 
@@ -9,7 +9,7 @@ from app.account.otp.repository.services import TotpService
 from toolkit.api.redis import get_redis_client
 
 
-async def get_totp_service(
+def get_totp_service(
     redis_client: Annotated[Redis, Depends(get_redis_client)],
 ) -> TotpService:
     """Get `TotpService` dependency, injecting redis client/connection."""
