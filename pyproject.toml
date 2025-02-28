@@ -33,6 +33,7 @@ redis = "^5.0.8"
 pyotp = "^2.9.0"
 pyjwt = {extras = ["crypto"], version = "^2.10.1"}
 celery = "^5.4.0"
+flower = "^2.0.1"
 
 
 [build-system]
