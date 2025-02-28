@@ -39,29 +39,14 @@ class Settings(BaseSettings):
     # .env Settings
     env: Env
 
-    # PostgreSQL settings
+    # Database
     database_url: Annotated[str, Field(..., description="Database connection URL.")]
 
-    # Redis settings
-    redis_host: Annotated[
-        str, Field(..., description="Redis server's hostname/IP.")
-    ] = "localhost"
-    redis_port: Annotated[
-        int, Field(..., description="The port the Redis instance is running.")
-    ] = 6037
-    redis_db: Annotated[
-        int, Field(..., description="Redis database (Accepted values: 0-15)")
-    ] = 0
-    redis_password: Annotated[str, Field(..., description="Redis instance password.")]
-    redis_pool_max_connection: Annotated[
-        int, Field(..., description="Redis pool max connection limit.")
-    ] = 100
-
-    # OTP settings
+    # OTP
     otp_ttl: Annotated[int, Field(..., description="OTPs time-to-live.")] = 300
     otp_digits: Annotated[int, Field(..., description="OTP digits number.")] = 6
 
-    # API settings
+    # API
     jwt_algorithm: Annotated[
         str, Field(..., description="The algorithm used for signing the jwt.")
     ]
@@ -93,6 +78,40 @@ class Settings(BaseSettings):
     ]
     origins: Annotated[
         list[str], Field(..., description="List of allowed API origins.")
+    ]
+
+    # Redis
+    redis_host: Annotated[
+        str, Field(..., description="Redis server's hostname/IP.")
+    ] = "localhost"
+    redis_port: Annotated[
+        int, Field(..., description="The port the Redis instance is running.")
+    ] = 6037
+    redis_db: Annotated[
+        int, Field(..., description="Redis database (Accepted values: 0-15)")
+    ] = 0
+    redis_password: Annotated[str, Field(..., description="Redis instance password.")]
+    redis_pool_max_connection: Annotated[
+        int, Field(..., description="Redis pool max connection limit.")
+    ] = 100
+
+    # Celery
+    celery_broker_url: Annotated[str, Field(..., description="Celery broker url")]
+    celery_backend_url: Annotated[str, Field(..., description="Celery backend url")]
+    celery_worker_prefetch_multiplier: Annotated[
+        int, Field(..., description="Celery broker Prefetch count")
+    ]
+    celery_worker_concurrency: Annotated[
+        int, Field(..., description="Celery workers thread/processes count")
+    ]
+    celery_broker_pool_limit: Annotated[
+        int, Field(..., description="Celery broker connection pool limit size")
+    ]
+    celery_worker_max_tasks_per_child: Annotated[
+        int, Field(..., description="Celery maximum tasks amount for a worker")
+    ]
+    celery_worker_max_memory_per_child: Annotated[
+        int, Field(..., description="Celery maximum memory size for a worker")
     ]
 
     @field_validator("jwt_private_key", mode="before")
