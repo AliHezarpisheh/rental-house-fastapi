@@ -1,3 +1,4 @@
+from .abc import APIException
 from .custom_exceptions import (
     DoesNotExistError,
     DuplicateResourceError,
@@ -6,6 +7,7 @@ from .custom_exceptions import (
 from .http_exceptions import CustomHTTPException
 
 __all__ = [
+    "APIException",
     "DoesNotExistError",
     "DuplicateResourceError",
     "UnauthorizedError",

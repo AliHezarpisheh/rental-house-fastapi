@@ -9,28 +9,15 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
-from app.account.auth.api.routers.user import router as users_router
-from app.account.auth.helpers.exceptions import TokenError
 from app.account.otp.api.routers.totp import router as totp_router
-from app.account.otp.helpers.exceptions import OtpError
 from config.base import settings
 from config.settings.openapi import responses
-from toolkit.api.exceptions import (
-    CustomHTTPException,
-    DoesNotExistError,
-    DuplicateResourceError,
-    UnauthorizedError,
-)
+from toolkit.api.exceptions import APIException
 
 from .exception_handlers import (
-    custom_http_exception_handler,
-    does_not_exist_exception_handler,
-    duplicate_resource_error_handler,
+    api_exception_error_handler,
     internal_exception_handler,
-    otp_error_handler,
     request_validation_exception_handler,
-    token_error_handler,
-    unauthorized_exception_handler,
 )
 from .healthcheck import router as health_check_router
 from .lifespan import lifespan
@@ -55,35 +42,14 @@ app.add_exception_handler(
     internal_exception_handler,
 )
 app.add_exception_handler(
-    CustomHTTPException,
-    custom_http_exception_handler,  # type: ignore
-)
-app.add_exception_handler(
     RequestValidationError,
     request_validation_exception_handler,  # type: ignore
 )
 app.add_exception_handler(
-    DoesNotExistError,
-    does_not_exist_exception_handler,  # type: ignore
-)
-app.add_exception_handler(
-    TokenError,
-    token_error_handler,  # type: ignore
-)
-app.add_exception_handler(
-    OtpError,
-    otp_error_handler,  # type: ignore
-)
-app.add_exception_handler(
-    DuplicateResourceError,
-    duplicate_resource_error_handler,  # type: ignore
-)
-app.add_exception_handler(
-    UnauthorizedError,
-    unauthorized_exception_handler,  # type: ignore
+    APIException,
+    api_exception_error_handler,  # type: ignore
 )
 
 # Include routers
 app.include_router(health_check_router)
-app.include_router(users_router)
 app.include_router(totp_router)
