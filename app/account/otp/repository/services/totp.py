@@ -12,6 +12,7 @@ from redis.asyncio import Redis
 from app.account.otp.helpers.exceptions import TotpVerificationFailedError
 from app.account.otp.repository.bll import TotpBusinessLogicLayer
 from app.account.otp.repository.dal import TotpDataAccessLayer
+from app.account.otp.tasks.email import send_otp_email
 from config.base import logger, settings
 from toolkit.api.enums import HTTPStatusDoc, Status
 
@@ -53,7 +54,8 @@ class TotpService:
         hashed_totp = await run_in_threadpool(self._hash_totp, totp=totp)
 
         if await self.totp_bll.set_totp(email=email, hashed_totp=hashed_totp):
-            logger.info("OTP successfully set for email: %s", email)
+            send_otp_email.delay(to_email=email, otp=totp)
+            logger.debug("OTP successfully send to email: %s", email)
             return {
                 "status": Status.CREATED,
                 "message": "TOTP sent successfully.",

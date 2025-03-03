@@ -20,6 +20,7 @@ def get_celery_app(
         "rental_house",
         broker=broker_url,
         backend=backend_url,
+        include=["app.account.otp.tasks.email"],
     )
     celery_app.conf.update(
         worker_prefetch_multiplier=worker_prefetch_multiplier,
@@ -43,5 +44,4 @@ def get_celery_app(
         task_default_max_retries=3,
         task_default_retry_delay=60,
     )
-    celery_app.autodiscover_tasks(["tasks"])
     return celery_app
