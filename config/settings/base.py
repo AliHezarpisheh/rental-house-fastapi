@@ -114,6 +114,15 @@ class Settings(BaseSettings):
         int, Field(..., description="Celery maximum memory size for a worker")
     ]
 
+    # Email
+    email_host: Annotated[str, Field(..., description="Email host")]
+    email_port: Annotated[int, Field(..., description="Email port")]
+    email_username: Annotated[str, Field(..., description="Email username")]
+    email_password: Annotated[str, Field(..., description="Email password")]
+    email_use_tls: Annotated[
+        bool, Field(..., description="Wether or not use tls for email sending")
+    ]
+
     @field_validator("jwt_private_key", mode="before")
     @classmethod
     def load_private_key(cls, value: Any, info: ValidationInfo) -> RSAPrivateKey:
