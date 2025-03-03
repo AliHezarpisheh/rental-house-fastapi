@@ -4,9 +4,14 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from celery import Task
+
+if TYPE_CHECKING:
+    AnyTask = Task[Any, Any]
+else:
+    AnyTask = Task
 
 from config.base import celery_app, logger, settings
 
@@ -72,7 +77,7 @@ def format_email_html(template_path: str, otp: str) -> str:
     ignore_result=True,
     rate_limit="500/m",
 )
-def send_otp_email(self: Task[Any, Any], to_email: str, otp: str) -> None:
+def send_otp_email(self: AnyTask, to_email: str, otp: str) -> None:
     """
     Send an OTP email using an SMTP server.
 
