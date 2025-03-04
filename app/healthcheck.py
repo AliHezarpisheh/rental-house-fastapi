@@ -6,8 +6,7 @@ from fastapi import APIRouter, status
 from pydantic import BaseModel
 
 from config.base import db, redis_manager
-from toolkit.api.enums import HTTPStatusDoc, Status
-from toolkit.api.exceptions import CustomHTTPException
+from toolkit.api.exceptions import ServiceUnavailableError
 
 router = APIRouter(prefix="/health-check", tags=["Health Check"])
 
@@ -20,6 +19,8 @@ class HealthCheckResponse(BaseModel):
     ----------
     database : bool
         Indicates if the database is available.
+    redis : bool
+        Indicates if the redis is available.
     message : str
         Message indicating the health status.
     """
@@ -37,34 +38,24 @@ class HealthCheckResponse(BaseModel):
 )
 async def check_health() -> Any:
     """
-    Perform a health check to ensure the database connection is available.
+    Perform a health check to ensure all the necessary connections are available.
 
     Returns
     -------
     Any
-        JSON response indicating the health status of the database.
+        JSON response indicating the health status of the database and redis.
 
     Raises
     ------
-    CustomHTTPException
-        If the database connection is not available, raises a 500 HTTP error.
+    ServiceUnavailableError
+        If the database connection or redis are not available, raises a 503 HTTP error.
     """
     is_db_available = await db.test_connection()
     if not is_db_available:
-        raise CustomHTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status=Status.FAILURE,
-            message="Database not available",
-            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-        )
+        raise ServiceUnavailableError(message="Database not available")
     is_redis_available = await redis_manager.test_connection()
     if not is_redis_available:
-        raise CustomHTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status=Status.FAILURE,
-            message="Redis not available",
-            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-        )
+        raise ServiceUnavailableError(message="Redis not available")
     return {
         "database": is_db_available,
         "redis": is_redis_available,

@@ -4,7 +4,7 @@ from enum import StrEnum
 
 
 class Messages(StrEnum):
-    """Enumeration of messages used in API responses."""
+    """Enumeration of general messages used in API responses."""
 
     UNAUTHORIZED = (
         "Authentication failed or user does not have permissions for the desired "

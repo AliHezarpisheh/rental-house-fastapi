@@ -59,7 +59,7 @@ async def send_totp(
     "/verify",
     response_model=APIResponse,
     response_model_exclude_none=True,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
 )
 async def verify_otp(
     email: EmailBody,

@@ -1,4 +1,4 @@
-"""Module provides ORM functionality for database interaction."""
+"""Module providing ORM functionality for database interaction."""
 
 from typing import ClassVar
 

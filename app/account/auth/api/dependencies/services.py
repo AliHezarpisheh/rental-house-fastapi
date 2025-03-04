@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 from app.account.auth.repository.services import TokenService, UserService
 from app.account.otp.api.dependencies import get_totp_service
 from app.account.otp.repository.services import TotpService
-from toolkit.api.database import get_async_db_session
+from toolkit.api.dependencies import get_async_db_session
 
 
 async def get_user_service(

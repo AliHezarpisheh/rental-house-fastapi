@@ -1,14 +1,13 @@
-"""Dependency injection module for database session dependency, mainly the session."""
+"""Dependency injection module for database session dependencies."""
 
 from typing import AsyncGenerator
 
-from fastapi import status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from config.base import db, logger
-from toolkit.api.enums import HTTPStatusDoc, Messages, Status
-from toolkit.api.exceptions import CustomHTTPException
+from toolkit.api.enums.messages import Messages
+from toolkit.api.exceptions import InternalServerError
 
 
 async def get_async_db_session() -> (
@@ -19,14 +18,14 @@ async def get_async_db_session() -> (
 
     This module provides an asynchronous generator function `get_async_db_session
     for injecting an async scoped database session into FastAPI endpoints. It manages
-    database transactions, logging errors, and raising custom HTTP exceptions in
-    case of database-related or unexpected issues.
+    database transactions, logging errors, and raising internal errors in case of
+    database-related or unexpected issues.
 
     Raises
     ------
-    CustomHTTPException
+    InternalServerError
         If a SQLAlchemy error or any other unexpected exception occurs, a custom
-        HTTP exception is raised with an appropriate status code and message.
+        internal error is raised.
 
     Yields
     ------
@@ -44,19 +43,12 @@ Annotated[AsyncSession, Depends(get_async_db_session)]):
             # Interact with the database using `db_session`
             pass
     """
-    db_session = db.get_session()
     try:
+        db_session = db.get_session()
         yield db_session
-    except CustomHTTPException:
-        raise
     except SQLAlchemyError:
         await db_session.rollback()
-        logger.error("Database error occurred", exc_info=True)
-        raise CustomHTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status=Status.ERROR,
-            message=Messages.INTERNAL_SERVER_ERROR,
-            documentation_link=HTTPStatusDoc.HTTP_STATUS_500,
-        )
+        logger.error("Unexpected database error", exc_info=True)
+        raise InternalServerError(Messages.INTERNAL_SERVER_ERROR.value)
     finally:
         await db_session.close()

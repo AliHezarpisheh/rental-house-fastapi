@@ -1,4 +1,4 @@
-"""Defines the abstract base class for parsers."""
+"""Module defining the abstract base class for parsers."""
 
 from abc import ABC, abstractmethod
 from pathlib import Path

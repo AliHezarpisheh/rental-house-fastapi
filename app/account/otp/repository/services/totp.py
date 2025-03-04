@@ -88,7 +88,7 @@ class TotpService:
             return {
                 "status": Status.SUCCESS,
                 "message": "TOTP verified successfully.",
-                "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
+                "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
             }
 
         raise TotpVerificationFailedError("Incorrect OTP.")

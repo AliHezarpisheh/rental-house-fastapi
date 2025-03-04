@@ -6,7 +6,7 @@ from unittest import mock
 import httpx
 import pytest
 
-from toolkit.api import AsyncAPIClient
+from toolkit.api.api_client import AsyncAPIClient
 
 
 @pytest.fixture
