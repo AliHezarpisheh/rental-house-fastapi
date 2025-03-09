@@ -35,7 +35,7 @@ async def get_async_redis_client() -> AsyncGenerator[Redis, None]:
 
         @app.get("/some-redis-route/")
         async def some_redis_route(redis_client: \
-Annotated[Redis, Depends(get_async_redis_client)]):  # noqa: E501
+Annotated[Redis, Depends(get_async_redis_client)]):
             # Interact with Redis using `redis_client`
             pass
     """

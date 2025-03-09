@@ -43,8 +43,8 @@ Annotated[AsyncSession, Depends(get_async_db_session)]):
             # Interact with the database using `db_session`
             pass
     """
+    db_session = db.get_session()
     try:
-        db_session = db.get_session()
         yield db_session
     except SQLAlchemyError:
         await db_session.rollback()
