@@ -1,4 +1,4 @@
-"""Unit tests for the TOMLParser class."""
+"""Module defining unit tests for the TOMLParser class."""
 
 from unittest.mock import mock_open, patch
 
@@ -24,17 +24,20 @@ def toml_parser() -> TOMLParser:
 
 @pytest.mark.smoke
 def test_read(toml_parser: TOMLParser) -> None:
-    """Test reading a valid TOML file."""
+    """Verify reading a valid TOML file."""
+    # Arrange & Act
     with patch("pathlib.Path.open", mock_open(read_data=SAMPLE_TOML_CONTENT)):
         content = toml_parser.read()
 
+    # Assert
     assert content == {"info": {"name": "John", "age": 30}}
 
 
 def test_read_invalid_syntax_toml_file(
     toml_parser: TOMLParser,
 ) -> None:
-    """Test reading an invalid TOML file."""
+    """Verify reading an invalid TOML file."""
+    # Arrange & Act & Assert
     with patch("pathlib.Path.open", mock_open(read_data="invalid syntax")):
         with pytest.raises(TOMLParseError, match="Syntax Error in: `test.toml`!"):
             toml_parser.read()

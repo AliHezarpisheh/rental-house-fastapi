@@ -1,4 +1,4 @@
-"""Tests for the Pagination class in toolkit.api.pagination module."""
+"""Module defining unit tests for the pagination classes."""
 
 from unittest.mock import MagicMock
 
@@ -19,19 +19,8 @@ def mock_query() -> MagicMock:
     [(1, 10), (2, 10), (1, 20), (2, 20), (3, 20), (4, 20)],
 )
 def test_paginate(mock_query: MagicMock, page: int, page_size: int) -> None:
-    """
-    Fixture to create a mock SQLAlchemy Query object.
-
-    Parameters
-    ----------
-    mock_query : MagicMock
-        A mock SQLAlchemy Query object.
-    page : int
-        Page number.
-    page_size : int
-        Page size.
-    """
-    # Expected calls
+    """Verify `paginate` method of the `PageNumberPagination` class."""
+    # Arrange: Expected calls
     expected_offset = (page - 1) * page_size
     expected_limit = page_size
 
@@ -39,8 +28,10 @@ def test_paginate(mock_query: MagicMock, page: int, page_size: int) -> None:
     mock_query.offset.return_value = mock_query
     mock_query.limit.return_value = mock_query
 
+    # Act
     result = PageNumberPagination.paginate(mock_query, page, page_size)
 
+    # Assert
     mock_query.offset.assert_called_once_with(expected_offset)
     mock_query.limit.assert_called_once_with(expected_limit)
 

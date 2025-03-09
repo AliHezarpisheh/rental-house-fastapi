@@ -1,4 +1,4 @@
-"""Tests for the AsyncAPIClient class in toolkit.api.api_client module."""
+"""Module defining unit tests for the `AsyncAPIClient` class."""
 
 from http import HTTPStatus
 from unittest import mock
@@ -27,10 +27,11 @@ def async_client() -> AsyncAPIClient:
 @pytest.mark.asyncio
 async def test_get(async_client: AsyncAPIClient) -> None:
     """
-    Test the 'get' method of AsyncAPIClient.
+    Verify the 'get' method of `AsyncAPIClient`.
 
     The method should make an asynchronous GET request and return the expected response.
     """
+    # Arrange
     with mock.patch.object(
         async_client._client,
         "request",
@@ -42,8 +43,11 @@ async def test_get(async_client: AsyncAPIClient) -> None:
             request=httpx.Request("GET", "https://example.com/endpoint"),
         )
         mock_request.return_value = mock_response
+
+        # Act
         response = await async_client.get("/endpoint")
 
+        # Assert
         assert response.status_code == HTTPStatus.OK
         assert response.text == "test"
 
@@ -54,11 +58,12 @@ async def test_get(async_client: AsyncAPIClient) -> None:
 @pytest.mark.asyncio
 async def test_post(async_client: AsyncAPIClient) -> None:
     """
-    Test the 'post' method of AsyncAPIClient.
+    Verify the 'post' method of `AsyncAPIClient`.
 
     The method should make an asynchronous POST request and return the expected
     response.
     """
+    # Arrange
     with mock.patch.object(
         async_client._client,
         "request",
@@ -70,8 +75,11 @@ async def test_post(async_client: AsyncAPIClient) -> None:
             request=httpx.Request("POST", "https://example.com/endpoint"),
         )
         mock_request.return_value = mock_response
+
+        # Act
         response = await async_client.post("/endpoint")
 
+        # Assert
         assert response.status_code == HTTPStatus.CREATED
         assert response.text == "test"
 
@@ -82,7 +90,7 @@ async def test_post(async_client: AsyncAPIClient) -> None:
 @pytest.mark.asyncio
 async def test_put(async_client: AsyncAPIClient) -> None:
     """
-    Test the 'put' method of AsyncAPIClient.
+    Verify the 'put' method of `AsyncAPIClient`.
 
     The method should make an asynchronous PUT request and return the expected response.
     """
@@ -109,11 +117,12 @@ async def test_put(async_client: AsyncAPIClient) -> None:
 @pytest.mark.asyncio
 async def test_patch(async_client: AsyncAPIClient) -> None:
     """
-    Test the 'patch' method of AsyncAPIClient.
+    Verify the 'patch' method of `AsyncAPIClient`.
 
     The method should make an asynchronous PATCH request and return the expected
     response.
     """
+    # Arrange
     with mock.patch.object(
         async_client._client,
         "request",
@@ -125,8 +134,11 @@ async def test_patch(async_client: AsyncAPIClient) -> None:
             request=httpx.Request("PATCH", "https://example.com/endpoint"),
         )
         mock_request.return_value = mock_response
+
+        # Act
         response = await async_client.patch("/endpoint")
 
+        # Assert
         assert response.status_code == HTTPStatus.OK
         assert response.text == "test"
 
@@ -137,11 +149,12 @@ async def test_patch(async_client: AsyncAPIClient) -> None:
 @pytest.mark.asyncio
 async def test_delete(async_client: AsyncAPIClient) -> None:
     """
-    Test the 'delete' method of AsyncAPIClient.
+    Verify the 'delete' method of `AsyncAPIClient`.
 
     The method should make an asynchronous DELETE request and return the expected
     response.
     """
+    # Arrange
     with mock.patch.object(
         async_client._client,
         "request",
@@ -153,8 +166,11 @@ async def test_delete(async_client: AsyncAPIClient) -> None:
             request=httpx.Request("DELETE", "https://example.com/endpoint"),
         )
         mock_request.return_value = mock_response
+
+        # Act
         response = await async_client.delete("/endpoint")
 
+        # Assert
         assert response.status_code == HTTPStatus.CREATED
         assert response.text == "test"
 
@@ -162,17 +178,20 @@ async def test_delete(async_client: AsyncAPIClient) -> None:
 
 
 def test_str(async_client: AsyncAPIClient) -> None:
-    """Test the '__str__' method of AsyncAPIClient.
+    """
+    Verify the '__str__' method of `AsyncAPIClient`.
 
     This method is responsible for testing the string representation of the
     AsyncAPIClient class.
     """
+    # Arrange & Act
     actual_str = str(async_client)
     expected_str = (
         f"AsyncAPIClient - Base URL: {async_client.base_url}, "
         f"Timeout: {async_client.timeout}s"
     )
 
+    # Assert
     assert (
         actual_str == expected_str
     ), f"expect `{expected_str}`, but got `{actual_str}`"
@@ -180,11 +199,12 @@ def test_str(async_client: AsyncAPIClient) -> None:
 
 def test_repr(async_client: AsyncAPIClient) -> None:
     """
-    Test the '__repr__' method of AsyncAPIClient.
+    Verify the '__repr__' method of `AsyncAPIClient`.
 
     This method is responsible for testing the string representation of the
     AsyncAPIClient class.
     """
+    # Arrange & Act
     actual_repr = repr(async_client)
     expected_repr = (
         f"AsyncAPIClient(base_url={async_client.base_url}, "
@@ -192,6 +212,7 @@ def test_repr(async_client: AsyncAPIClient) -> None:
         f"default_headers={async_client.default_headers})"
     )
 
+    # Assert
     assert (
         actual_repr == expected_repr
     ), f"expect `{expected_repr}`, but got `{actual_repr}`"
