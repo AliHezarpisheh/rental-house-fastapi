@@ -3,8 +3,9 @@
 from enum import StrEnum
 
 
-class Env(StrEnum):
+class EnvEnum(StrEnum):
     """Enumeration class define different environments."""
 
     DEVELOPMENT = "development"
+    TESTING = "testing"
     PRODUCTION = "production"

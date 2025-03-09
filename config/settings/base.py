@@ -15,7 +15,7 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
-from .enums import Env
+from .enums import EnvEnum
 from .openapi import OpenAPISettings
 
 
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     openapi: OpenAPISettings
 
     # .env Settings
-    env: Env
+    env: EnvEnum
 
     # Database
     database_url: Annotated[str, Field(..., description="Database connection URL.")]
