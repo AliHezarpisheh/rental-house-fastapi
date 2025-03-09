@@ -40,6 +40,7 @@ pytest = "^8.2.2"
 pytest-cov = "^5.0.0"
 pytest-randomly = "^3.15.0"
 pytest-asyncio = "^0.23.7"
+pytest-env = "^1.1.5"
 tox = "^4.15.1"
 
 
@@ -106,10 +107,17 @@ markers = [
 required_plugins = [
     "pytest-randomly",
     "pytest-cov",
+    "pytest-env",
 ]
 
 testpaths = "tests"
 xfail_strict = true
+
+asyncio_mode = "auto"
+
+
+[tool.pytest_env]
+ENV = "testing"
 
 
 [tool.coverage.run]
