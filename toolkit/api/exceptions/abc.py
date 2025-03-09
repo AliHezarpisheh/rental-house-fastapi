@@ -47,13 +47,13 @@ class APIException(ABC, Exception):
     def documentation_link(self) -> HTTPStatusDoc:
         """URL to relevant documentation."""
 
-    def to_jsonable_dict(self) -> dict[str, str]:
+    def to_jsonable_dict(self) -> dict[str, str | dict[str, str]]:
         """Return error data as a jsonable dictionary."""
-        error_data = {
+        error_data: dict[str, str | dict[str, str]] = {
             "status": self.status.value,
             "message": self.message,
             "documentationLink": self.documentation_link.value,
         }
         if self.field and self.reason:
-            error_data.update({"field": self.field, "reason": self.reason})
+            error_data.update({"details": {"field": self.field, "reason": self.reason}})
         return error_data
