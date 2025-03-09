@@ -39,8 +39,8 @@ Annotated[Redis, Depends(get_async_redis_client)]):
             # Interact with Redis using `redis_client`
             pass
     """
+    redis_client = redis_manager.get_connection()
     try:
-        redis_client = redis_manager.get_connection()
         yield redis_client
     except RedisError:
         logger.error("Unexpected redis error", exc_info=True)
