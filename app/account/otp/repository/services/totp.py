@@ -119,8 +119,8 @@ class TotpService:
             The hashed TOTP.
         """
         salt = bcrypt.gensalt()
-        hashed_otp = bcrypt.hashpw(
+        hashed_totp = bcrypt.hashpw(
             totp.encode("utf-8"),
             salt=salt,
         )
-        return hashed_otp.decode("utf-8")
+        return hashed_totp.decode("utf-8")

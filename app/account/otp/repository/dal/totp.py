@@ -62,7 +62,7 @@ class TotpDataAccessLayer:
             email,
             key_name,
         )
-        mapping = self._get_totp_mapping(hashed_otp=hashed_totp)
+        mapping = self._get_totp_mapping(hashed_totp=hashed_totp)
         is_created: int = await self.redis_client.hset(  # type: ignore
             key_name,
             mapping=mapping,
@@ -103,7 +103,7 @@ class TotpDataAccessLayer:
 
         key_name = self._get_totp_key_name(email=email)
         hashed_totp: str | None = await self.redis_client.hget(  # type: ignore
-            key_name, "hashed_otp"
+            key_name, "hashed_totp"
         )
 
         if not hashed_totp:
@@ -279,7 +279,7 @@ class TotpDataAccessLayer:
         return f"totp:users:{email}"
 
     @staticmethod
-    def _get_totp_mapping(hashed_otp: str) -> dict[str, str | int]:
+    def _get_totp_mapping(hashed_totp: str) -> dict[str, str | int]:
         """
         Get the Redis hashmap for setting a hashed otp with attempts starting from 0.
 
@@ -295,4 +295,4 @@ class TotpDataAccessLayer:
             otp and the user attempts for verifying the corresponding otp, starting from
             0.
         """
-        return {"hashed_otp": hashed_otp, "attempts": 0}
+        return {"hashed_totp": hashed_totp, "attempts": 0}
