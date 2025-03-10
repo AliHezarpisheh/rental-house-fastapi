@@ -167,6 +167,7 @@ async def redis_client(
     all_keys = await connection.keys()
     for key in all_keys:
         await connection.unlink(key)
+    await connection.close()
 
 
 @pytest.fixture(autouse=True)
