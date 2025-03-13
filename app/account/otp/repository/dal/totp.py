@@ -11,6 +11,7 @@ from typing import SupportsInt
 
 import redis
 from redis.asyncio import Redis
+from redis.asyncio.client import Pipeline
 
 from app.account.otp.helpers.exceptions import (
     TotpAttemptsIncriminationError,
@@ -37,12 +38,12 @@ class TotpDataAccessLayer:
 
     async def set_totp(self, email: str, hashed_totp: str) -> bool:
         """
-        Set a TOTP for a given user in Redis.
+        Set a TOTP for a given user email in Redis.
 
         Parameters
         ----------
         email : str
-            The ID of the user.
+            The email of the user.
         hashed_totp : str
             The hashed TOTP value to be stored.
 
@@ -58,36 +59,41 @@ class TotpDataAccessLayer:
         """
         key_name = self._get_totp_key_name(email=email)
         logger.debug(
-            "Attempting to set TOTP for email: %s, Redis key: %s",
+            "Attempting to set totp for email: %s, Redis key: %s",
             email,
             key_name,
         )
         mapping = self._get_totp_mapping(hashed_totp=hashed_totp)
-        is_created: int = await self.redis_client.hset(  # type: ignore
+
+        redis_pipeline = self.redis_client.pipeline()
+        redis_pipeline.hset(
             key_name,
             mapping=mapping,
         )
-        await self.set_expiration(key_name, ttl=settings.otp_ttl)
+        await self.set_expiration(
+            key_name, ttl=settings.otp_ttl, pipeline=redis_pipeline
+        )
+        is_created, _ = await redis_pipeline.execute()
 
         if not is_created:
             logger.error(
-                "Failed to create TOTP for email: %s, Redis key: %s",
+                "Failed to create totp for email: %s, Redis key: %s",
                 email,
                 key_name,
             )
-            raise TotpCreationFailedError("OTP creation failed. Check the logs!")
+            raise TotpCreationFailedError("Totp creation failed. Check the logs!")
 
         logger.debug("TOTP successfully created for email: %s", email)
         return bool(is_created)
 
     async def get_totp(self, email: str) -> str:
         """
-        Retrieve the TOTP for a given user from Redis.
+        Retrieve the TOTP for a given user email from Redis.
 
         Parameters
         ----------
         email : str
-            The ID of the user.
+            The email of the user.
 
         Returns
         -------
@@ -99,7 +105,7 @@ class TotpDataAccessLayer:
         TotpVerificationFailedError
             If there is an error retrieving or verifying the TOTP.
         """
-        logger.debug("Retrieving TOTP for email: %s", email)
+        logger.debug("Retrieving top for email: %s", email)
 
         key_name = self._get_totp_key_name(email=email)
         hashed_totp: str | None = await self.redis_client.hget(  # type: ignore
@@ -113,7 +119,8 @@ class TotpDataAccessLayer:
                 key_name,
             )
             raise TotpVerificationFailedError(
-                "OTP verification failed. OTP expiration reached or no OTP was created."
+                "Totp verification failed. Totp expiration reached or no totp was "
+                "created."
             )
 
         logger.debug("Successfully retrieved TOTP for email: %s", email)
@@ -121,12 +128,12 @@ class TotpDataAccessLayer:
 
     async def delete_totp(self, email: str) -> bool:
         """
-        Delete the TOTP for a given user from Redis.
+        Delete the TOTP for a given user email from Redis.
 
         Parameters
         ----------
         email : str
-            The ID of the user.
+            The email of the user.
 
         Returns
         -------
@@ -138,14 +145,14 @@ class TotpDataAccessLayer:
         TotpRemovalFailedError
             If there is an error deleting the TOTP.
         """
-        logger.debug("Attempting to remove TOTP for email: %s", email)
+        logger.debug("Attempting to remove totp for email: %s", email)
 
         key_name = self._get_totp_key_name(email=email)
         is_deleted = await self.redis_client.unlink(key_name)
 
         if not is_deleted:
-            logger.error("Failed to delete TOTP for email: %s", email)
-            raise TotpRemovalFailedError("Server error! Call the support.")
+            logger.error("Failed to delete totp for email: %s", email)
+            raise TotpRemovalFailedError("Totp removal failed. Check the logs!")
 
         logger.debug("Successfully deleted TOTP for email: %s", email)
         return bool(is_deleted)
@@ -178,17 +185,17 @@ class TotpDataAccessLayer:
 
     async def increment_attempts(self, email: str) -> None:
         """
-        Increment the attempt counter for TOTP verification for a given user.
+        Increment the attempt counter for totp verification for a given user.
 
         This method increases the "attempts" field in the Redis hash for the
-        specified user's TOTP data. It is used to track how many times a user
-        has tried to verify their TOTP, supporting rate-limiting and preventing
+        specified user's totp data. It is used to track how many times a user
+        has tried to verify their totp, supporting rate-limiting and preventing
         brute-force attacks.
 
         Parameters
         ----------
         email : str
-            The ID of the user whose attempt counter will be incremented.
+            The email of the user whose attempt counter will be incremented.
 
         Raises
         ------
@@ -201,7 +208,7 @@ class TotpDataAccessLayer:
         except redis.exceptions.ResponseError as err:
             logger.error("Error while incrementing user attempts for the OTP: %s", err)
             raise TotpAttemptsIncriminationError(
-                "Error while working with OTP data."
+                "Error while working with totp data. Check the logs!"
             ) from err
 
     async def get_attempts(self, email: str) -> int:
@@ -214,7 +221,7 @@ class TotpDataAccessLayer:
         Parameters
         ----------
         email : str
-            The ID of the user whose attempt count will be retrieved.
+            The email of the user whose attempt count will be retrieved.
 
         Returns
         -------
@@ -233,9 +240,11 @@ class TotpDataAccessLayer:
         )
         return int(attempts) if attempts is not None else -1
 
-    async def set_expiration(self, key_name: str, ttl: int) -> None:
+    async def set_expiration(
+        self, key_name: str, ttl: int, pipeline: Pipeline | None = None
+    ) -> None:
         """
-        Set an expiration time for a specific Redis key associated with TOTP data.
+        Set an expiration time for a specific Redis key associated with totp data.
 
         This method applies a time-to-live (TTL) on the Redis key to ensure the data
         is automatically removed after the specified duration, contributing to security
@@ -247,19 +256,23 @@ class TotpDataAccessLayer:
             The name of the Redis key for which to set the expiration time.
         ttl : int
             The time-to-live duration (in seconds) for the key.
+        pipeline : Pipeline, optional
+            The redis pipeline object, reducing application roundtrip to redis server.
+            If not provided, the redis_client attached to class will be used.
 
         Raises
         ------
         TotpCreationFailedError
             If setting the expiration fails in Redis.
         """
-        is_set_expired = await self.redis_client.expire(key_name, time=ttl)
+        client = pipeline if pipeline else self.redis_client
+        is_set_expired = await client.expire(key_name, time=ttl)
         if not is_set_expired:
             logger.error(
                 "Failed to set expiration time for Redis key: %s",
                 key_name,
             )
-            raise TotpCreationFailedError("OTP creation failed. Check the logs!")
+            raise TotpCreationFailedError("Totp creation failed. Check the logs!")
 
     @staticmethod
     def _get_totp_key_name(email: str) -> str:
