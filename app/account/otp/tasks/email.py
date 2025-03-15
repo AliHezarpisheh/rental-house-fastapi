@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 from celery import Task
 
 if TYPE_CHECKING:
-    AnyTask = Task[Any, Any]
+    AnyTask = Task[Any, Any]  # pragma: no cover
 else:
     AnyTask = Task
 

@@ -66,7 +66,7 @@ class TotpDataAccessLayer:
         mapping = self._get_totp_mapping(hashed_totp=hashed_totp)
 
         redis_pipeline = self.redis_client.pipeline()
-        redis_pipeline.hset(
+        await redis_pipeline.hset(  # type: ignore
             key_name,
             mapping=mapping,
         )
