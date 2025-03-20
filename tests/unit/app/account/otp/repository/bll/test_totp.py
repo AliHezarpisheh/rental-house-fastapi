@@ -10,7 +10,7 @@ from app.account.otp.helpers.exceptions import (
     TotpVerificationAttemptsLimitError,
 )
 from app.account.otp.repository.bll import TotpBusinessLogicLayer
-from tests.conftest import settings
+from config.base import settings
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ from app.account.otp.helpers.exceptions import (
 from app.account.otp.repository.bll.totp import TotpBusinessLogicLayer
 from app.account.otp.repository.dal.totp import TotpDataAccessLayer
 from app.account.otp.repository.services import TotpService
-from tests.conftest import settings
+from config.base import settings
 from toolkit.api.enums import HTTPStatusDoc, Status
 from toolkit.api.exceptions.custom_exceptions import ValidationError
 

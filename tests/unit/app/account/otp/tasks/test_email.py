@@ -11,7 +11,7 @@ from app.account.otp.tasks.email import (
     load_html_template,
     send_otp_email,
 )
-from tests.conftest import settings
+from config.base import settings
 
 
 def test_load_html_template_success() -> None:

@@ -10,14 +10,11 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_scoped_session
 
 from app.main import app
+from config.base import settings
 from config.database import AsyncDatabaseConnection
 from config.redis import AsyncRedisConnection
-from config.settings.base import Settings
 from toolkit.api.dependencies import get_async_db_session, get_async_redis_client
 from toolkit.database.orm import Base
-
-settings = Settings()  # Use this instead of config.base.settings object in testing
-
 
 # Database-related hooks
 

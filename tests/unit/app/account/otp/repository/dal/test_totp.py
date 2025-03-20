@@ -13,7 +13,7 @@ from app.account.otp.helpers.exceptions import (
     TotpVerificationFailedError,
 )
 from app.account.otp.repository.dal import TotpDataAccessLayer
-from tests.conftest import settings
+from config.base import settings
 
 
 @pytest.fixture
