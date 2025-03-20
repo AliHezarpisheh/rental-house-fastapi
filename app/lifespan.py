@@ -5,18 +5,13 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-from app.account.auth.models import *  # noqa: F403
-from config.base import db, logger
-from toolkit.database.orm import Base
+from config.base import db, logger, redis_manager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Set lifespan context manager for FastAPI application."""
-    engine = db.get_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables have been created successfully!")
     yield
-    logger.info("Disposing database engine...")
+    logger.info("Cleaning up the application...")
     await db.close_engine()
+    await redis_manager.disconnect()

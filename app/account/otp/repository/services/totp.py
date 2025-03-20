@@ -4,123 +4,130 @@ Module for TOTP service operations.
 This module provides a service class for handling various TOTP-related operations.
 """
 
-import bcrypt
 import pyotp
+from email_validator import EmailNotValidError, validate_email
 from fastapi.concurrency import run_in_threadpool
-from redis.asyncio import Redis
 
-from app.account.otp.helpers.exceptions import TotpVerificationFailedError
+from app.account.otp.helpers.exceptions import (
+    TotpCreationFailedError,
+    TotpVerificationFailedError,
+)
 from app.account.otp.repository.bll import TotpBusinessLogicLayer
 from app.account.otp.repository.dal import TotpDataAccessLayer
 from app.account.otp.tasks.email import send_otp_email
 from config.base import logger, settings
 from toolkit.api.enums import HTTPStatusDoc, Status
+from toolkit.api.exceptions import ValidationError
 
 
 class TotpService:
     """Service class for TOTP-related operations."""
 
-    def __init__(self, redis_client: Redis) -> None:
+    def __init__(
+        self, totp_dal: TotpDataAccessLayer, totp_bll: TotpBusinessLogicLayer
+    ) -> None:
         """
         Initialize the `TotpService`.
 
         Parameters
         ----------
-        redis_client : Redis
-            An asynchronous Redis client instance.
+        totp_dal : TotpDataAccessLayer
+            The data access layer responsible for interacting with the data
+            storage (e.g., Redis) to handle TOTP-related data.
+        totp_bll : TotpBusinessLogicLayer
+            The business logic layer responsible for the core TOTP operations, such as
+            generating and validating TOTP codes.
         """
-        self.redis_client = redis_client
+        self.totp_dal = totp_dal
+        self.totp_bll = totp_bll
+
         self.totp = pyotp.TOTP(
             pyotp.random_base32(), interval=settings.otp_ttl, digits=settings.otp_digits
         )
-        self.totp_dal = TotpDataAccessLayer(redis_client=self.redis_client)
-        self.totp_bll = TotpBusinessLogicLayer(redis_client=self.redis_client)
 
     async def set_totp(self, email: str) -> dict[str, str]:
         """
-        Set a new TOTP for the user.
+        Set a new totp for the user.
 
         Parameters
         ----------
         email : str
-            The email of the user for whom to set the OTP.
+            The email of the user for whom to set the totp.
 
         Returns
         -------
         dict[str, str]
             A dictionary containing the status, message, and documentation link.
         """
+        self._validate_email(email=email)
+
         totp = self._generate_totp()
-        hashed_totp = await run_in_threadpool(self._hash_totp, totp=totp)
+        hashed_totp = await run_in_threadpool(self.totp_bll.hash_totp, totp=totp)
 
         if await self.totp_bll.set_totp(email=email, hashed_totp=hashed_totp):
             send_otp_email.delay(to_email=email, otp=totp)
-            logger.debug("OTP successfully send to email: %s", email)
+            logger.debug("Totp successfully send to email: %s", email)
             return {
                 "status": Status.CREATED,
-                "message": "TOTP sent successfully.",
+                "message": "Otp sent successfully.",
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
             }
 
-        return {
-            "status": Status.FAILURE,
-            "message": "Failed to set TOTP. Contact support.",
-            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500,
-        }
+        raise TotpCreationFailedError("Failed to set otp. Contact support.")
 
     async def verify_totp(self, email: str, totp: str) -> dict[str, str]:
         """
-        Verify the TOTP for the user.
+        Verify the totp for the user.
 
         Parameters
         ----------
         email : str
-            The email of the user whose TOTP needs to be verified.
+            The email of the user whose totp needs to be verified.
         totp : str
-            The TOTP to be verified.
+            The totp to be verified.
 
         Returns
         -------
         dict[str, str]
             A dictionary containing the status, message, and documentation link.
         """
+        self._validate_email(email=email)
+        self._validate_totp(totp=totp)
+
         if await self.totp_bll.verify_totp(email=email, totp=totp):
             return {
                 "status": Status.SUCCESS,
-                "message": "TOTP verified successfully.",
+                "message": "Otp verified successfully.",
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
             }
 
-        raise TotpVerificationFailedError("Incorrect OTP.")
+        raise TotpVerificationFailedError("Incorrect otp.")
+
+    @staticmethod
+    def _validate_email(email: str) -> None:
+        try:
+            validate_email(email)
+        except EmailNotValidError:
+            logger.debug("Invalid email provided: %s", email)
+            raise ValidationError("Invalid email format")
+
+    @staticmethod
+    def _validate_totp(totp: str) -> None:
+        assert isinstance(totp, str), "totp should be instance of `str`"
+
+        if not totp.isdigit():
+            raise ValidationError("Totp should be just digits")
+
+        if len(totp) != settings.otp_digits:
+            raise ValidationError(f"Totp should be {settings.otp_digits} digits")
 
     def _generate_totp(self) -> str:
         """
-        Generate a new TOTP.
+        Generate a new totp.
 
         Returns
         -------
         str
-            A new TOTP string.
+            A new otp string.
         """
         return self.totp.now()
-
-    def _hash_totp(self, totp: str) -> str:
-        """
-        Hash the TOTP using bcrypt.
-
-        Parameters
-        ----------
-        totp : str
-            The TOTP to be hashed.
-
-        Returns
-        -------
-        str
-            The hashed TOTP.
-        """
-        salt = bcrypt.gensalt()
-        hashed_totp = bcrypt.hashpw(
-            totp.encode("utf-8"),
-            salt=salt,
-        )
-        return hashed_totp.decode("utf-8")

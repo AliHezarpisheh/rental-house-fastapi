@@ -3,7 +3,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
-from pydantic import EmailStr
 from pydantic.functional_validators import BeforeValidator
 
 from app.account.otp.api.dependencies import get_totp_service
@@ -11,7 +10,7 @@ from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import OpenAPITags
 from toolkit.api.schemas import APIResponse
 
-EmailBody = Annotated[EmailStr, Body(embed=True, examples=["test@test.com"])]
+EmailBody = Annotated[str, Body(embed=True, examples=["test@test.com"])]
 
 router = APIRouter(prefix="/users/totp", tags=[OpenAPITags.USERS])
 
