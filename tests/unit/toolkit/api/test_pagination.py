@@ -16,7 +16,14 @@ def mock_query() -> MagicMock:
 
 @pytest.mark.parametrize(
     ["page", "page_size"],
-    [(1, 10), (2, 10), (1, 20), (2, 20), (3, 20), (4, 20)],
+    [
+        pytest.param(1, 10, id="page: 1, page_size: 10"),
+        pytest.param(2, 10, id="page: 2, page_size: 10"),
+        pytest.param(1, 20, id="page: 1, page_size: 20"),
+        pytest.param(2, 20, id="page: 2, page_size: 20"),
+        pytest.param(3, 20, id="page: 3, page_size: 20"),
+        pytest.param(4, 20, id="page: 4, page_size: 20"),
+    ],
 )
 def test_paginate(mock_query: MagicMock, page: int, page_size: int) -> None:
     """Verify `paginate` method of the `PageNumberPagination` class."""
