@@ -1,14 +1,11 @@
 """Contains the TOMLParser class for parsing TOML files."""
 
-import logging
 from typing import Any
 
 import tomlkit
 
-from .base import Parser
+from .abc import Parser
 from .helpers.exceptions import TOMLParseError
-
-logger = logging.getLogger(__name__)
 
 
 class TOMLParser(Parser):
@@ -29,5 +26,5 @@ class TOMLParser(Parser):
             return content
         except tomlkit.exceptions.ParseError as err:
             msg = f"Syntax Error in: `{self.file_path}`!"
-            logger.error(msg, exc_info=True)
+            print(msg)
             raise TOMLParseError(msg) from err

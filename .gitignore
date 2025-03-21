@@ -37,6 +37,7 @@ env/
 .env
 .env.production
 .env.development
+.env.testing
 venv/
 .venv
 build/
@@ -113,3 +114,4 @@ logs/
 
 ### Custom files for this specific project ###
 run.py
+**/.keys/**
