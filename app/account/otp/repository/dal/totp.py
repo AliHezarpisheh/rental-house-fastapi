@@ -13,6 +13,7 @@ import redis
 from redis.asyncio import Redis
 from redis.asyncio.client import Pipeline
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpAttemptsIncriminationError,
     TotpCreationFailedError,
@@ -81,7 +82,7 @@ class TotpDataAccessLayer:
                 email,
                 key_name,
             )
-            raise TotpCreationFailedError("Totp creation failed. Check the logs!")
+            raise TotpCreationFailedError(OtpMessages.OTP_CREATION_FAILED.value)
 
         logger.debug("TOTP successfully created for email: %s", email)
         return bool(is_created)
@@ -118,10 +119,7 @@ class TotpDataAccessLayer:
                 email,
                 key_name,
             )
-            raise TotpVerificationFailedError(
-                "Totp verification failed. Totp expiration reached or no totp was "
-                "created."
-            )
+            raise TotpVerificationFailedError(OtpMessages.OTP_VERIFICATION_FAILED.value)
 
         logger.debug("Successfully retrieved TOTP for email: %s", email)
         return hashed_totp
@@ -152,7 +150,7 @@ class TotpDataAccessLayer:
 
         if not is_deleted:
             logger.error("Failed to delete totp for email: %s", email)
-            raise TotpRemovalFailedError("Totp removal failed. Check the logs!")
+            raise TotpRemovalFailedError(OtpMessages.OTP_REMOVAL_FAILED.value)
 
         logger.debug("Successfully deleted TOTP for email: %s", email)
         return bool(is_deleted)
@@ -208,7 +206,7 @@ class TotpDataAccessLayer:
         except redis.exceptions.ResponseError as err:
             logger.error("Error while incrementing user attempts for the OTP: %s", err)
             raise TotpAttemptsIncriminationError(
-                "Error while working with totp data. Check the logs!"
+                OtpMessages.OTP_DATA_ERROR.value
             ) from err
 
     async def get_attempts(self, email: str) -> int:
@@ -272,7 +270,7 @@ class TotpDataAccessLayer:
                 "Failed to set expiration time for Redis key: %s",
                 key_name,
             )
-            raise TotpCreationFailedError("Totp creation failed. Check the logs!")
+            raise TotpCreationFailedError(OtpMessages.OTP_CREATION_FAILED.value)
 
     @staticmethod
     def _get_totp_key_name(email: str) -> str:

@@ -8,6 +8,7 @@ import pyotp
 from email_validator import EmailNotValidError, validate_email
 from fastapi.concurrency import run_in_threadpool
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpCreationFailedError,
     TotpVerificationFailedError,
@@ -69,11 +70,11 @@ class TotpService:
             logger.debug("Totp successfully send to email: %s", email)
             return {
                 "status": Status.CREATED,
-                "message": "Otp sent successfully.",
+                "message": OtpMessages.OTP_SEND_SUCCESS,
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
             }
 
-        raise TotpCreationFailedError("Failed to set otp. Contact support.")
+        raise TotpCreationFailedError(OtpMessages.OTP_CREATION_FAILED.value)
 
     async def verify_totp(self, email: str, totp: str) -> dict[str, str]:
         """
@@ -97,11 +98,11 @@ class TotpService:
         if await self.totp_bll.verify_totp(email=email, totp=totp):
             return {
                 "status": Status.SUCCESS,
-                "message": "Otp verified successfully.",
+                "message": OtpMessages.OTP_VERIFICATION_SUCCESS,
                 "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
             }
 
-        raise TotpVerificationFailedError("Incorrect otp.")
+        raise TotpVerificationFailedError(OtpMessages.OTP_VERIFICATION_FAILED.value)
 
     @staticmethod
     def _validate_email(email: str) -> None:
@@ -109,17 +110,17 @@ class TotpService:
             validate_email(email)
         except EmailNotValidError:
             logger.debug("Invalid email provided: %s", email)
-            raise ValidationError("Invalid email format")
+            raise ValidationError(OtpMessages.EMAIL_INVALID.value)
 
     @staticmethod
     def _validate_totp(totp: str) -> None:
         assert isinstance(totp, str), "totp should be instance of `str`"
 
         if not totp.isdigit():
-            raise ValidationError("Totp should be just digits")
+            raise ValidationError(OtpMessages.OTP_ONLY_DIGITS.value)
 
         if len(totp) != settings.otp_digits:
-            raise ValidationError(f"Totp should be {settings.otp_digits} digits")
+            raise ValidationError(OtpMessages.OTP_FIXED_DIGITS.value)
 
     def _generate_totp(self) -> str:
         """

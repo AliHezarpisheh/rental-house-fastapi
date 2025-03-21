@@ -6,6 +6,7 @@ import pytest
 import redis
 from redis.asyncio import Redis
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpAttemptsIncriminationError,
     TotpCreationFailedError,
@@ -71,7 +72,7 @@ async def test_set_totp_creation_failed(mock_redis_client: Redis) -> None:
 
     # Act & Assert
     with pytest.raises(
-        TotpCreationFailedError, match="Totp creation failed. Check the logs!"
+        TotpCreationFailedError, match=OtpMessages.OTP_CREATION_FAILED.value
     ):
         await totp_dal.set_totp(email=email, hashed_totp=hashed_totp)
 
@@ -103,9 +104,7 @@ async def test_get_unset_totp_failed(totp_dal: TotpDataAccessLayer) -> None:
     # Act & Assert
     with pytest.raises(
         TotpVerificationFailedError,
-        match=(
-            "Totp verification failed. Totp expiration reached or no totp was created."
-        ),
+        match=OtpMessages.OTP_VERIFICATION_FAILED.value,
     ):
         await totp_dal.get_totp(email=email)
 
@@ -128,9 +127,7 @@ async def test_delete_totp_success(totp_dal: TotpDataAccessLayer) -> None:
 
     with pytest.raises(
         TotpVerificationFailedError,
-        match=(
-            "Totp verification failed. Totp expiration reached or no totp was created."
-        ),
+        match=OtpMessages.OTP_VERIFICATION_FAILED.value,
     ):
         await totp_dal.get_totp(email=email)
 
@@ -144,7 +141,7 @@ async def test_delete_unset_totp_failed(totp_dal: TotpDataAccessLayer) -> None:
 
     # Act
     with pytest.raises(
-        TotpRemovalFailedError, match="Totp removal failed. Check the logs!"
+        TotpRemovalFailedError, match=OtpMessages.OTP_REMOVAL_FAILED.value
     ):
         await totp_dal.delete_totp(email=email)
 
@@ -218,7 +215,7 @@ async def test_increment_attempts_response_error_failed(
     # Act & Assert
     with pytest.raises(
         TotpAttemptsIncriminationError,
-        match="Error while working with totp data. Check the logs!",
+        match=OtpMessages.OTP_DATA_ERROR.value,
     ):
         await totp_dal.increment_attempts(email=email)
 
@@ -330,7 +327,7 @@ async def test_set_expiration_redis_failed(totp_dal: TotpDataAccessLayer) -> Non
 
     # Act & Assert
     with pytest.raises(
-        TotpCreationFailedError, match="Totp creation failed. Check the logs!"
+        TotpCreationFailedError, match=OtpMessages.OTP_CREATION_FAILED.value
     ):
         await totp_dal.set_expiration(
             key_name=key_name, ttl=ttl, pipeline=redis_pipeline

@@ -5,6 +5,7 @@ from unittest import mock
 import pytest
 from redis.asyncio import Redis
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpAlreadySetError,
     TotpVerificationAttemptsLimitError,
@@ -63,7 +64,7 @@ async def test_set_totp_already_set_error_failed(
     await totp_bll.set_totp(email=email, hashed_totp=hashed_totp)
 
     # Act & Assert
-    with pytest.raises(TotpAlreadySetError, match="User has an active totp already."):
+    with pytest.raises(TotpAlreadySetError, match=OtpMessages.OTP_ALREADY_ACTIVE.value):
         await totp_bll.set_totp(email=email, hashed_totp=hashed_totp)
 
 
@@ -135,7 +136,7 @@ async def test_verify_otp_attempts_limit_error_failed(
     # Act & Assert
     with pytest.raises(
         TotpVerificationAttemptsLimitError,
-        match="Too much requests for verifying totp.",
+        match=OtpMessages.OTP_TOO_MANY_REQUESTS.value,
     ):
         await totp_bll.verify_totp(email=email, totp=totp)
 

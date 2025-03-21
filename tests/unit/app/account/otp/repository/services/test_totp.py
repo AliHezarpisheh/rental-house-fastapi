@@ -5,6 +5,7 @@ from unittest import mock
 import pytest
 from redis.asyncio import Redis
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpCreationFailedError,
     TotpVerificationAttemptsLimitError,
@@ -44,7 +45,7 @@ async def test_set_totp_success(totp_service: TotpService, redis_client: Redis) 
         # Assert
         expected_result = {
             "status": Status.CREATED,
-            "message": "Otp sent successfully.",
+            "message": OtpMessages.OTP_SEND_SUCCESS,
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_201,
         }
         assert actual_result == expected_result
@@ -91,7 +92,7 @@ async def test_set_totp_failed_due_to_invalid_email_format(
         "app.account.otp.repository.services.totp.send_otp_email", autospec=True
     ), mock.patch.object(TotpService, "_generate_totp", return_value=totp):
         # Act
-        with pytest.raises(ValidationError, match="Invalid email format"):
+        with pytest.raises(ValidationError, match=OtpMessages.EMAIL_INVALID.value):
             await totp_service.set_totp(email=email)
 
 
@@ -112,7 +113,7 @@ async def test_set_totp_failed_due_to_unknown_issue(redis_client: Redis) -> None
     ), mock.patch.object(TotpService, "_generate_totp", return_value=totp):
         # Act
         with pytest.raises(
-            TotpCreationFailedError, match="Failed to set otp. Contact support."
+            TotpCreationFailedError, match=OtpMessages.OTP_CREATION_FAILED.value
         ):
             await totp_service.set_totp(email=email)
 
@@ -136,7 +137,7 @@ async def test_verify_totp_success(
         # Assert
         expected_result = {
             "status": Status.SUCCESS,
-            "message": "Otp verified successfully.",
+            "message": OtpMessages.OTP_VERIFICATION_SUCCESS,
             "documentation_link": HTTPStatusDoc.HTTP_STATUS_200,
         }
         assert actual_result == expected_result
@@ -170,7 +171,9 @@ async def test_verify_totp_failed_due_to_unknown_issue(
         await totp_service.set_totp(email=email)
 
         # Act & Assert
-        with pytest.raises(TotpVerificationFailedError, match="Incorrect otp."):
+        with pytest.raises(
+            TotpVerificationFailedError, match=OtpMessages.OTP_VERIFICATION_FAILED.value
+        ):
             await totp_service.verify_totp(email=email, totp=invalid_totp)
 
 
@@ -203,7 +206,7 @@ async def test_verify_totp_failed_due_to_invalid_email_format(
         await totp_service.set_totp(email=email)
 
         # Act & Assert
-        with pytest.raises(ValidationError, match="Invalid email format"):
+        with pytest.raises(ValidationError, match=OtpMessages.EMAIL_INVALID.value):
             await totp_service.verify_totp(email=invalid_email, totp=totp)
 
 
@@ -258,7 +261,7 @@ async def test_verify_totp_failed_due_to_invalid_totp_not_digits(
         await totp_service.set_totp(email=email)
 
         # Act & Assert
-        with pytest.raises(ValidationError, match="Totp should be just digits"):
+        with pytest.raises(ValidationError, match=OtpMessages.OTP_ONLY_DIGITS.value):
             await totp_service.verify_totp(email=email, totp=invalid_totp)
 
 
@@ -284,9 +287,7 @@ async def test_verify_totp_failed_due_to_invalid_totp_length(
         await totp_service.set_totp(email=email)
 
         # Act & Assert
-        with pytest.raises(
-            ValidationError, match=f"Totp should be {settings.otp_digits} digits"
-        ):
+        with pytest.raises(ValidationError, match=OtpMessages.OTP_FIXED_DIGITS.value):
             await totp_service.verify_totp(email=email, totp=invalid_totp)
 
 
@@ -311,7 +312,7 @@ async def test_verify_totp_rate_limit(totp_service: TotpService) -> None:
         # Act & Assert
         with pytest.raises(
             TotpVerificationAttemptsLimitError,
-            match="Too much requests for verifying totp.",
+            match=OtpMessages.OTP_TOO_MANY_REQUESTS.value,
         ):
             await totp_service.verify_totp(email=email, totp=totp)
 
@@ -335,11 +336,7 @@ async def test_verify_expired_totp(
 
         # Act & Assert
         with pytest.raises(
-            TotpVerificationFailedError,
-            match=(
-                "Totp verification failed. Totp expiration reached or no totp was "
-                "created."
-            ),
+            TotpVerificationFailedError, match=OtpMessages.OTP_VERIFICATION_FAILED.value
         ):
             await totp_service.verify_totp(email=email, totp=totp)
 

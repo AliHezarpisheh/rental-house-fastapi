@@ -9,6 +9,7 @@ import bcrypt
 from fastapi.concurrency import run_in_threadpool
 from redis.asyncio import Redis
 
+from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
     TotpAlreadySetError,
     TotpVerificationAttemptsLimitError,
@@ -57,7 +58,7 @@ class TotpBusinessLogicLayer:
         """
         if await self.totp_dal.check_totp(email=email):
             logger.debug("Totp already set for email: %s", email)
-            raise TotpAlreadySetError("User has an active totp already.")
+            raise TotpAlreadySetError(OtpMessages.OTP_ALREADY_ACTIVE.value)
 
         return await self.totp_dal.set_totp(email=email, hashed_totp=hashed_totp)
 
@@ -88,7 +89,7 @@ class TotpBusinessLogicLayer:
         user_attempts = await self.totp_dal.get_attempts(email=email)
         if user_attempts >= self.MAX_VERIFY_ATTEMPTS:
             raise TotpVerificationAttemptsLimitError(
-                "Too much requests for verifying totp."
+                OtpMessages.OTP_TOO_MANY_REQUESTS.value
             )
 
         # Check totp hash and validate it.
