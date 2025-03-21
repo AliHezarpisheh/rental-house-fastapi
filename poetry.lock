@@ -1753,6 +1753,20 @@ tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
 testing = ["covdefaults (>=2.3)", "coverage (>=7.6.1)", "pytest-mock (>=3.14)"]
 
 [[package]]
+name = "pytest-order"
+version = "1.3.0"
+description = "pytest plugin to run your tests in a specific order"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_order-1.3.0-py3-none-any.whl", hash = "sha256:2cd562a21380345dd8d5774aa5fd38b7849b6ee7397ca5f6999bbe6e89f07f6e"},
+    {file = "pytest_order-1.3.0.tar.gz", hash = "sha256:51608fec3d3ee9c0adaea94daa124a5c4c1d2bb99b00269f098f414307f23dde"},
+]
+
+[package.dependencies]
+pytest = {version = ">=6.2.4", markers = "python_version >= \"3.10\""}
+
+[[package]]
 name = "pytest-randomly"
 version = "3.16.0"
 description = "Pytest plugin to randomly order tests and control random.seed."
@@ -2517,4 +2531,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8fe1fe8e3b9327e3f46cad106a564b7860f3032672f07270e5fcd929305cbc0a"
+content-hash = "92cfdebe441dd93f0408d0dc847a4f1f8650aeec9197b7c3d0e79daa46f339ed"
