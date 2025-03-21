@@ -1,3 +1,8 @@
+# These settings and configurations are consistent across different environments.
+# Inconsistent and secret settings and configurations should be placed in the .env files,
+# using the .env.example files.
+
+# OpenAPI information.
 [openapi]
 title = "Rental House Management API"
 version = "1.0.0"
@@ -42,3 +47,54 @@ description = "Operations related to managing notifications, including sending a
 [[openapi.tags]]
 name = "Reviews"
 description = "Operations related to managing reviews and ratings for properties, including adding, updating, and deleting reviews."
+
+[[openapi.tags]]
+name = "Health Check"
+description = "A simple endpoint to check if the API is up and running."
+
+# Logging configuration.
+[logging]
+version = 1
+disable_existing_loggers = false
+
+[logging.formatters.coreFormatter]
+format = "%(asctime)s - %(levelname)s - %(name)s - %(relativepath)s:%(lineno)d - %(message)s"
+datefmt = "%Y-%m-%d %H:%M:%S"
+
+[logging.handlers.consoleHandler]
+level = "DEBUG"
+class = "logging.StreamHandler"
+formatter = "coreFormatter"
+
+[logging.handlers.fileHandler]
+level = "INFO"
+class = "logging.handlers.RotatingFileHandler"
+filename = "logs/rental-house.log"
+maxBytes = 1048576   # 1 MB
+backupCount = 10
+formatter = "coreFormatter"
+
+[logging.loggers.development]
+level = "DEBUG"
+handlers = ["consoleHandler", "fileHandler"]
+propagate = true
+
+[logging.loggers.production]
+level = "INFO"
+handlers = ["fileHandler"]
+propagate = true
+
+[logging.loggers.uvicorn]
+level = "DEBUG"
+handlers = ["consoleHandler", "fileHandler"]
+propagate = true
+
+[logging.loggers.uvicorn.error]
+level = "DEBUG"
+handlers = ["consoleHandler", "fileHandler"]
+propagate = true
+
+[logging.loggers.uvicorn.access]
+level = "DEBUG"
+handlers = ["consoleHandler", "fileHandler"]
+propagate = true
