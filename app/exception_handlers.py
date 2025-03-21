@@ -77,7 +77,7 @@ async def request_validation_exception_handler(
             "status": Status.VALIDATION_ERROR.value,
             "message": message,
             "details": {"field": field, "reason": reason},
-            "documentation_link": HTTPStatusDoc.HTTP_STATUS_422.value,
+            "documentationLink": HTTPStatusDoc.HTTP_STATUS_422.value,
         },
     )
 
