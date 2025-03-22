@@ -9,7 +9,7 @@ class OtpMessages(StrEnum):
     """Enumeration of messages used in otp API responses."""
 
     OTP_SEND_SUCCESS = "Otp sent successfully"
-    OTP_VERIFICATION_SUCCESS = "Otp sent successfully"
+    OTP_VERIFICATION_SUCCESS = "Otp verified successfully"
     OTP_CREATION_FAILED = "Otp creation failed. Check the logs!"
     OTP_VERIFICATION_FAILED = "Otp verification failed. Expired or not created"
     OTP_REMOVAL_FAILED = "Otp removal failed. Check the logs!"

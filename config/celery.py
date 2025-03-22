@@ -21,6 +21,9 @@ def get_celery_app(
         broker=broker_url,
         backend=backend_url,
         include=["app.account.otp.tasks.email"],
+        task_routes={
+            "app.account.otp.tasks.email.send_otp_email": {"queue": "otp_email"}
+        },
     )
     celery_app.conf.update(
         worker_prefetch_multiplier=worker_prefetch_multiplier,
