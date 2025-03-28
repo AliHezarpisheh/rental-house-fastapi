@@ -14,8 +14,8 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from app.account.auth.helpers.exceptions import (
-    DuplicateUserError,
     UserDoesNotExistError,
+    UserDuplicateError,
 )
 from app.account.auth.models import User
 from app.account.auth.schemas import UserRegisterInput
@@ -75,7 +75,9 @@ class UserDataAccessLayer:
                 await self.db_session.rollback()
                 self.handle_integrity_error(exc=exc)
 
-    async def get_user_by_email(self, email: str) -> User:
+    async def get_user_by_email(
+        self, email: str, is_verified: bool = True, is_active: bool = True
+    ) -> User:
         """
         Retrieve a user by their email address.
 
@@ -86,6 +88,10 @@ class UserDataAccessLayer:
         ----------
         email : str
             The email address of the user to be retrieved.
+        is_verified : bool
+            Wether or not the user is verified.
+        is_active : bool
+            Wether or not the user is active.
 
         Returns
         -------
@@ -99,8 +105,8 @@ class UserDataAccessLayer:
         """
         stmt = select(User).where(
             User.email == email,
-            User.is_verified == True,  # noqa: E712
-            User.is_active == True,  # noqa: E712
+            User.is_verified == is_verified,
+            User.is_active == is_active,
         )
 
         try:
@@ -139,16 +145,16 @@ class UserDataAccessLayer:
 
         Raises
         ------
-        DuplicateUserError
+        UserDuplicateError
             If the error is due to a duplicate username or email.
         """
         if "duplicate key value violates unique constraint" in str(exc):
             if "account__auth__user_username_key" in str(exc):
-                raise DuplicateUserError(
+                raise UserDuplicateError(
                     "User with this username already exists"
                 ) from exc
             elif "account__auth__user_email_key" in str(exc):
-                raise DuplicateUserError("User with this email already exists") from exc
+                raise UserDuplicateError("User with this email already exists") from exc
         logger.warning("Unhandled Integrity error occurred. The error: %s", exc)
         raise exc
 

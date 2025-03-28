@@ -19,6 +19,3 @@ class AuthMessages(StrEnum):
     UNAUTHORIZED_MESSAGE = (
         "Token is not valid. Please log in again to obtain a new token."
     )
-    INTERNAL_TOKEN_ERROR = (
-        "Internal error generating token. Check the logs for more info."
-    )

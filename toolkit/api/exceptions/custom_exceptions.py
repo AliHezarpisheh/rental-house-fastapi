@@ -15,6 +15,22 @@ class BadRequestError(APIException):
     documentation_link = HTTPStatusDoc.HTTP_STATUS_400
 
 
+class DoesNotExistError(APIException):
+    """Exception raised when a resource not found."""
+
+    status_code = fastapi.status.HTTP_404_NOT_FOUND
+    status = Status.NOT_FOUND
+    documentation_link = HTTPStatusDoc.HTTP_STATUS_404
+
+
+class DuplicateError(APIException):
+    """Exception raised when a resource is duplicated."""
+
+    status_code = fastapi.status.HTTP_409_CONFLICT
+    status = Status.CONFLICT
+    documentation_link = HTTPStatusDoc.HTTP_STATUS_409
+
+
 class ValidationError(APIException):
     """Exception raised when a validation error happened."""
 

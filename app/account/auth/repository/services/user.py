@@ -67,7 +67,7 @@ class UserService:
         user = await self.user_dal.create_user(
             user_input=user_input, hashed_password=hashed_password
         )
-        await self.totp_service.set_otp(user_id=user.id)
+        await self.totp_service.set_totp(email=user.email)
         return {
             "status": Status.CREATED,
             "message": AuthMessages.SUCCESS_REGISTER_MESSAGE,
@@ -98,10 +98,10 @@ class UserService:
             A dictionary containing the status, a message, and an optional
             documentation link describing the result of the verification process.
         """
-        user = await self.user_dal.get_user_by_email(email=email)
+        user = await self.user_dal.get_user_by_email(email=email, is_verified=False)
 
         otp_verification_result = await self.totp_service.verify_totp(
-            user_id=user.id, totp=totp
+            email=user.email, totp=totp
         )
         if otp_verification_result.get("status") == Status.SUCCESS:
             await self.user_dal.verify_user(user_id=user.id)
@@ -150,9 +150,9 @@ class UserService:
             password=user_input.password, hashed_password=user.hashed_password
         )
         if not is_password_valid:
-            raise InvalidUserCredentials(AuthMessages.INVALID_CREDENTIALS)
+            raise InvalidUserCredentials(AuthMessages.INVALID_CREDENTIALS.value)
 
-        await self.totp_service.set_otp(user_id=user.id)
+        await self.totp_service.set_totp(email=user.email)
         return {
             "status": Status.SUCCESS,
             "message": AuthMessages.SUCCESS_LOGIN_MESSAGE,
@@ -189,7 +189,7 @@ class UserService:
 
         # Verify the provided totp.
         otp_verification_result = await self.totp_service.verify_totp(
-            user_id=user.id, totp=totp
+            email=user.email, totp=totp
         )
         if otp_verification_result.get("status") == Status.SUCCESS:
             return user

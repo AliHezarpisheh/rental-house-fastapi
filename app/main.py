@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
+from app.account.auth.api.routers.user import router as user_router
 from app.account.otp.api.routers.totp import router as totp_router
 from config.base import settings
 from config.settings.openapi import responses
@@ -53,3 +54,4 @@ app.add_exception_handler(
 # Include routers
 app.include_router(health_check_router)
 app.include_router(totp_router)
+app.include_router(user_router)

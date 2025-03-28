@@ -37,7 +37,7 @@ async def internal_exception_handler(
         content={
             "status": Status.ERROR.value,
             "message": Messages.INTERNAL_SERVER_ERROR.value,
-            "documentation_link": HTTPStatusDoc.HTTP_STATUS_500.value,
+            "documentationLink": HTTPStatusDoc.HTTP_STATUS_500.value,
         },
     )
 

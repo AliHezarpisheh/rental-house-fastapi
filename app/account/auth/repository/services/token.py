@@ -9,11 +9,11 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.helpers.exceptions import InternalTokenError
 from app.account.auth.models import User
 from app.account.auth.schemas.token import JwtClaims
 from config.base import logger, settings
+from toolkit.api.enums.messages import Messages
 
 
 class TokenService:
@@ -50,7 +50,7 @@ class TokenService:
             )
         except TypeError as err:
             logger.error("Couldn't encode the jwt.", exc_info=True)
-            raise InternalTokenError(AuthMessages.INTERNAL_TOKEN_ERROR) from err
+            raise InternalTokenError(Messages.INTERNAL_SERVER_ERROR) from err
 
         return {"access_token": token, "type": self.TOKEN_TYPE}
 
