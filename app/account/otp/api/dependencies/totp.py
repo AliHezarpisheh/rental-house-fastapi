@@ -16,5 +16,5 @@ def get_totp_service(
 ) -> TotpService:
     """Get `TotpService` dependency, injecting redis client/connection."""
     totp_dal = TotpDataAccessLayer(redis_client=redis_client)
-    totp_bll = TotpBusinessLogicLayer(redis_client=redis_client)
-    return TotpService(totp_dal=totp_dal, totp_bll=totp_bll)
+    totp_bll = TotpBusinessLogicLayer(totp_dal=totp_dal)
+    return TotpService(totp_bll=totp_bll)

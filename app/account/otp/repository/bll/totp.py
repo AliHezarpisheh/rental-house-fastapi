@@ -7,7 +7,6 @@ interfacing with the data access layer.
 
 import bcrypt
 from fastapi.concurrency import run_in_threadpool
-from redis.asyncio import Redis
 
 from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.helpers.exceptions import (
@@ -23,17 +22,17 @@ class TotpBusinessLogicLayer:
 
     MAX_VERIFY_ATTEMPTS = 5  # Every user can only attempt 5 times for verifying an totp
 
-    def __init__(self, redis_client: Redis) -> None:
+    def __init__(self, totp_dal: TotpDataAccessLayer) -> None:
         """
         Initialize the `TotpBusinessLogicLayer`.
 
         Parameters
         ----------
-        redis_client : Redis
-            The Redis client for asynchronous operations.
+        totp_dal : TotpDataAccessLayer
+            The data access layer responsible for interacting with the data
+            storage (e.g., Redis) to handle TOTP-related data.
         """
-        self.redis_client = redis_client
-        self.totp_dal = TotpDataAccessLayer(redis_client=self.redis_client)
+        self.totp_dal = totp_dal
 
     async def set_totp(self, email: str, hashed_totp: str) -> bool:
         """

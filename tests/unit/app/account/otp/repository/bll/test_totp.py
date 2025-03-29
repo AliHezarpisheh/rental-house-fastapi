@@ -11,13 +11,15 @@ from app.account.otp.helpers.exceptions import (
     TotpVerificationAttemptsLimitError,
 )
 from app.account.otp.repository.bll import TotpBusinessLogicLayer
+from app.account.otp.repository.dal.totp import TotpDataAccessLayer
 from config.base import settings
 
 
 @pytest.fixture
 def totp_bll(redis_client: Redis) -> TotpBusinessLogicLayer:
     """Fixture for initializing `TotpBusinessLogicLayer` with Redis client."""
-    return TotpBusinessLogicLayer(redis_client=redis_client)
+    totp_dal = TotpDataAccessLayer(redis_client=redis_client)
+    return TotpBusinessLogicLayer(totp_dal=totp_dal)
 
 
 @pytest.fixture

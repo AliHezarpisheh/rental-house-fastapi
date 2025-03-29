@@ -11,5 +11,4 @@ def test_get_totp_service_success(redis_client: Redis) -> None:
     actual_totp_service = get_totp_service(redis_client=redis_client)
 
     # Assert
-    assert actual_totp_service.totp_dal.redis_client == redis_client
-    assert actual_totp_service.totp_bll.redis_client == redis_client
+    assert actual_totp_service.totp_bll.totp_dal.redis_client == redis_client

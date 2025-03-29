@@ -14,7 +14,6 @@ from app.account.otp.helpers.exceptions import (
     TotpVerificationFailedError,
 )
 from app.account.otp.repository.bll import TotpBusinessLogicLayer
-from app.account.otp.repository.dal import TotpDataAccessLayer
 from app.account.otp.tasks.email import send_otp_email
 from config.base import logger, settings
 from toolkit.api.enums import HTTPStatusDoc, Status
@@ -24,22 +23,16 @@ from toolkit.api.exceptions import ValidationError
 class TotpService:
     """Service class for TOTP-related operations."""
 
-    def __init__(
-        self, totp_dal: TotpDataAccessLayer, totp_bll: TotpBusinessLogicLayer
-    ) -> None:
+    def __init__(self, totp_bll: TotpBusinessLogicLayer) -> None:
         """
         Initialize the `TotpService`.
 
         Parameters
         ----------
-        totp_dal : TotpDataAccessLayer
-            The data access layer responsible for interacting with the data
-            storage (e.g., Redis) to handle TOTP-related data.
         totp_bll : TotpBusinessLogicLayer
             The business logic layer responsible for the core TOTP operations, such as
             generating and validating TOTP codes.
         """
-        self.totp_dal = totp_dal
         self.totp_bll = totp_bll
 
         self.totp = pyotp.TOTP(

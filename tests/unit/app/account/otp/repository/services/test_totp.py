@@ -23,8 +23,8 @@ from toolkit.api.exceptions.custom_exceptions import ValidationError
 def totp_service(redis_client: Redis) -> TotpService:
     """Fixture provide a `TotpService` instance with `Redis` dependencies."""
     totp_dal = TotpDataAccessLayer(redis_client=redis_client)
-    totp_bll = TotpBusinessLogicLayer(redis_client=redis_client)
-    return TotpService(totp_dal=totp_dal, totp_bll=totp_bll)
+    totp_bll = TotpBusinessLogicLayer(totp_dal=totp_dal)
+    return TotpService(totp_bll=totp_bll)
 
 
 @pytest.mark.asyncio
@@ -51,7 +51,7 @@ async def test_set_totp_success(totp_service: TotpService, redis_client: Redis) 
         assert actual_result == expected_result
 
         # Verify the totp is actually set in the database with correct values
-        key_name = totp_service.totp_dal._get_totp_key_name(email=email)
+        key_name = totp_service.totp_bll.totp_dal._get_totp_key_name(email=email)
         totp_redis_value = await redis_client.hgetall(key_name)
         assert totp_redis_value["hashed_totp"] != totp
         # Due to different salts, every hash should be different, even for the same totp
@@ -101,10 +101,9 @@ async def test_set_totp_failed_due_to_invalid_email_format(
 async def test_set_totp_failed_due_to_unknown_issue(redis_client: Redis) -> None:
     """Verify totp creation fails when an unknown issue occurs."""
     # Arrange
-    totp_dal = TotpDataAccessLayer(redis_client=redis_client)
     mock_bll = mock.AsyncMock(spec_set=TotpBusinessLogicLayer)
     mock_bll.set_totp.return_value = False
-    totp_service = TotpService(totp_dal=totp_dal, totp_bll=mock_bll)
+    totp_service = TotpService(totp_bll=mock_bll)
 
     email = "test@test.com"
     totp = "123456"
@@ -143,7 +142,7 @@ async def test_verify_totp_success(
         assert actual_result == expected_result
 
         # Verify that the key is removed from the database
-        key_name = totp_service.totp_dal._get_totp_key_name(email=email)
+        key_name = totp_service.totp_bll.totp_dal._get_totp_key_name(email=email)
         is_key_exists = await redis_client.exists(key_name)
         assert is_key_exists == 0
 
@@ -331,7 +330,7 @@ async def test_verify_expired_totp(
         await totp_service.set_totp(email=email)
 
         # Simulate ttl expiration
-        key_name = totp_service.totp_dal._get_totp_key_name(email=email)
+        key_name = totp_service.totp_bll.totp_dal._get_totp_key_name(email=email)
         await redis_client.unlink(key_name)
 
         # Act & Assert
