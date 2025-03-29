@@ -24,17 +24,9 @@ class User(CommonMixin, Base):
 
     # Table Configurations
     __tablename__ = "account__auth__user"
-    __table_args__ = (
-        Index("ix_user_username", "username"),
-        Index("ix_user_email", "email"),
-    )
+    __table_args__ = (Index("ix_user_email", "email"),)
 
     # Columns
-    username: Mapped[str255] = mapped_column(
-        unique=True,
-        nullable=False,
-        comment="Unique username.",
-    )
     email: Mapped[str255] = mapped_column(
         unique=True,
         nullable=False,
@@ -71,13 +63,13 @@ class User(CommonMixin, Base):
     def __str__(self) -> str:
         """Return a string representation of the User object."""
         return (
-            f"<User(username={self.username}, email={self.email}, "
-            f"is_active={self.is_active}, is_verified={self.is_verified})>"
+            f"<email={self.email}, is_active={self.is_active}, "
+            f"is_verified={self.is_verified})>"
         )
 
     def __repr__(self) -> str:
         """Return a human-readable string representation of the User object."""
         return (
-            f"User(username={self.username}, email={self.email}, "
-            f"is_active={self.is_active}, is_verified={self.is_verified})"
+            f"email={self.email}, is_active={self.is_active}, "
+            f"is_verified={self.is_verified})"
         )

@@ -1,4 +1,9 @@
-from .token import TokenOutput
-from .user import UserAuthenticateInput, UserOutput, UserRegisterInput
+from .token import TokenOutputSchema
+from .user import UserAuthenticateInputSchema, UserOutputSchema, UserRegisterInputSchema
 
-__all__ = ["UserRegisterInput", "UserAuthenticateInput", "UserOutput", "TokenOutput"]
+__all__ = [
+    "UserRegisterInputSchema",
+    "UserAuthenticateInputSchema",
+    "UserOutputSchema",
+    "TokenOutputSchema",
+]

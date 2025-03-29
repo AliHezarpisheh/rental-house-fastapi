@@ -13,12 +13,13 @@ from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
+from app.account.auth.helpers.enums import AuthMessages
 from app.account.auth.helpers.exceptions import (
     UserDoesNotExistError,
     UserDuplicateError,
 )
 from app.account.auth.models import User
-from app.account.auth.schemas import UserRegisterInput
+from app.account.auth.schemas import UserRegisterInputSchema
 from config.base import logger
 
 
@@ -37,17 +38,26 @@ class UserDataAccessLayer:
         self.db_session = db_session
 
     async def create_user(
-        self, user_input: UserRegisterInput, hashed_password: str
+        self,
+        user_input: UserRegisterInputSchema,
+        hashed_password: str,
+        is_active: bool = True,
+        is_verified: bool = False,
     ) -> User:
         """
         Create a new user.
 
         Parameters
         ----------
-        user_input : UserRegisterInput
+        user_input : UserRegisterInputSchema
             User data to create a new user.
         hashed_password : str
             Hashed password for the new user.
+        is_verified : bool
+            Wether or not the user should be verified.
+        is_active : bool
+            Wether or not the user should be active.
+
 
         Returns
         -------
@@ -57,11 +67,10 @@ class UserDataAccessLayer:
         stmt = (
             insert(User)
             .values(
-                username=user_input.username,
                 email=user_input.email,
                 hashed_password=hashed_password,
-                is_active=True,
-                is_verified=False,
+                is_active=is_active,
+                is_verified=is_verified,
             )
             .returning(User)
         )
@@ -76,7 +85,7 @@ class UserDataAccessLayer:
                 self.handle_integrity_error(exc=exc)
 
     async def get_user_by_email(
-        self, email: str, is_verified: bool = True, is_active: bool = True
+        self, email: str, is_verified: bool | None = None, is_active: bool | None = None
     ) -> User:
         """
         Retrieve a user by their email address.
@@ -88,10 +97,12 @@ class UserDataAccessLayer:
         ----------
         email : str
             The email address of the user to be retrieved.
-        is_verified : bool
-            Wether or not the user is verified.
-        is_active : bool
-            Wether or not the user is active.
+        is_verified : bool, optional
+            Wether or not the user is verified. If not provided, the column does not
+            affect the sql statement.
+        is_active : bool, optional
+            Wether or not the user is active. If not provided, the column does not
+            affect the sql statement.
 
         Returns
         -------
@@ -103,10 +114,17 @@ class UserDataAccessLayer:
         UserDoesNotExistError
             If no user with the specified email exists in the database.
         """
+        filter_statements = [
+            statement
+            for statement in [
+                (User.is_verified == is_verified) if is_verified is not None else None,
+                (User.is_active == is_active) if is_active is not None else None,
+            ]
+            if statement is not None
+        ]
         stmt = select(User).where(
             User.email == email,
-            User.is_verified == is_verified,
-            User.is_active == is_active,
+            *filter_statements,
         )
 
         try:
@@ -136,7 +154,7 @@ class UserDataAccessLayer:
         async with self.db_session.begin():
             result = await self.db_session.execute(stmt)
             if result.rowcount == 0:
-                raise UserDoesNotExistError("User does not exist.")
+                raise UserDoesNotExistError("User does not exist")
 
     @staticmethod
     def handle_integrity_error(exc: IntegrityError) -> NoReturn:
@@ -146,15 +164,13 @@ class UserDataAccessLayer:
         Raises
         ------
         UserDuplicateError
-            If the error is due to a duplicate username or email.
+            If the error is due to a duplicate email.
         """
         if "duplicate key value violates unique constraint" in str(exc):
-            if "account__auth__user_username_key" in str(exc):
+            if "account__auth__user_email_key" in str(exc):
                 raise UserDuplicateError(
-                    "User with this username already exists"
+                    AuthMessages.EMAIL_ALREADY_TAKEN.value
                 ) from exc
-            elif "account__auth__user_email_key" in str(exc):
-                raise UserDuplicateError("User with this email already exists") from exc
         logger.warning("Unhandled Integrity error occurred. The error: %s", exc)
         raise exc
 
@@ -168,4 +184,4 @@ class UserDataAccessLayer:
         NoResultFound
             If the user is not found.
         """
-        raise UserDoesNotExistError("User does not exists.")
+        raise UserDoesNotExistError(AuthMessages.USER_NOT_EXIST.value) from exc

@@ -9,10 +9,11 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session
 
 from app.account.auth.helpers.enums import AuthMessages
-from app.account.auth.helpers.exceptions import InvalidUserCredentials
+from app.account.auth.helpers.exceptions import UserInvalidCredentials
 from app.account.auth.models import User
-from app.account.auth.schemas import UserRegisterInput
-from app.account.auth.schemas.user import UserAuthenticateInput
+from app.account.auth.repository.bll.user import UserBusinessLogicLayer
+from app.account.auth.schemas import UserRegisterInputSchema
+from app.account.auth.schemas.user import UserAuthenticateInputSchema
 from app.account.otp.helpers.exceptions import TotpVerificationFailedError
 from app.account.otp.repository.services import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
@@ -37,9 +38,10 @@ class UserService:
         self.db_session = db_session
         self.totp_service = totp_service
         self.user_dal = UserDataAccessLayer(db_session=db_session)
+        self.user_bll = UserBusinessLogicLayer(user_dal=self.user_dal)
 
     async def register(
-        self, user_input: UserRegisterInput
+        self, user_input: UserRegisterInputSchema
     ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
         """
         Register a new user.
@@ -50,7 +52,7 @@ class UserService:
 
         Parameters
         ----------
-        user_input : UserRegisterInput
+        user_input : UserRegisterInputSchema
             The user input data required for registration.
 
         Returns
@@ -64,7 +66,7 @@ class UserService:
             self.hash_password, user_input.password
         )
 
-        user = await self.user_dal.create_user(
+        user = await self.user_bll.handle_register(
             user_input=user_input, hashed_password=hashed_password
         )
         await self.totp_service.set_totp(email=user.email)
@@ -98,7 +100,7 @@ class UserService:
             A dictionary containing the status, a message, and an optional
             documentation link describing the result of the verification process.
         """
-        user = await self.user_dal.get_user_by_email(email=email, is_verified=False)
+        user = await self.user_bll.get_user_for_registration_verification(email=email)
 
         otp_verification_result = await self.totp_service.verify_totp(
             email=user.email, totp=totp
@@ -118,7 +120,7 @@ class UserService:
         }
 
     async def authenticate(
-        self, user_input: UserAuthenticateInput
+        self, user_input: UserAuthenticateInputSchema
     ) -> dict[str, User | Status | HTTPStatusDoc | AuthMessages]:
         """
         Authenticate a user and initiate OTP (TOTP) setup.
@@ -129,7 +131,7 @@ class UserService:
 
         Parameters
         ----------
-        user_input : UserAuthenticateInput
+        user_input : UserAuthenticateInputSchema
             An object containing the user's login details, including email and password.
 
         Returns
@@ -141,7 +143,7 @@ class UserService:
 
         Raises
         ------
-        InvalidUserCredentials
+        UserInvalidCredentials
             If the provided email or password is incorrect.
         """
         user = await self.user_dal.get_user_by_email(email=user_input.email)
@@ -150,7 +152,7 @@ class UserService:
             password=user_input.password, hashed_password=user.hashed_password
         )
         if not is_password_valid:
-            raise InvalidUserCredentials(AuthMessages.INVALID_CREDENTIALS.value)
+            raise UserInvalidCredentials(AuthMessages.INVALID_CREDENTIALS.value)
 
         await self.totp_service.set_totp(email=user.email)
         return {

@@ -20,7 +20,6 @@ TableGroup auth {
 
 Table auth.user {
     id               int           [pk, increment, note: 'Primary key']
-    username         varchar(255)  [unique, not null, note: 'Unique username']
     email            varchar(255)  [unique, not null, note: 'Unique email address']
     hashed_password  varchar(255)  [not null, note: 'Hashed password']
     is_active        boolean       [default: true, note: 'Indicates if the user is active']

@@ -23,7 +23,7 @@ class JwtClaims:
     issue: str = "rental_house_fastapi"
 
 
-class TokenOutput(BaseSchema):
+class TokenOutputSchema(BaseSchema):
     """Output schema for granting user an access token with the token type."""
 
     access_token: str
