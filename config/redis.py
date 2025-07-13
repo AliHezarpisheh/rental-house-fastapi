@@ -55,6 +55,7 @@ class AsyncRedisConnection:
                 host=self.host,
                 port=self.port,
                 db=self.db,
+                password=self.password,
                 max_connections=self.max_connection,
                 encoding="utf-8",
                 decode_responses=True,

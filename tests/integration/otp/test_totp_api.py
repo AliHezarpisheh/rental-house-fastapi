@@ -6,6 +6,7 @@ used through `TotpService`, which has comprehensive test coverage. As a result, 
 totp API tests remain simple and minimal.
 """
 
+from collections.abc import Generator
 from unittest import mock
 
 import pytest
@@ -15,6 +16,15 @@ from httpx import AsyncClient
 from app.account.otp.helpers.enums import OtpMessages
 from app.account.otp.repository.services.totp import TotpService
 from toolkit.api.enums import HTTPStatusDoc, Status
+
+
+@pytest.fixture(scope="module", autouse=True)
+def mock_send_otp_email() -> Generator[None, None, None]:
+    """Mock celery task, preventing actual task generation."""
+    with mock.patch(
+        "app.account.otp.repository.services.totp.send_otp_email", autospec=True
+    ):
+        yield
 
 
 @pytest.mark.asyncio

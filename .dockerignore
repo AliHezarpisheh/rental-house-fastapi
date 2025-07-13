@@ -248,7 +248,4 @@
 **/LICENSE
 docs/
 tox.ini
-poetry.lock
-pyproject.toml
 config/environments/
-**/.keys/**
