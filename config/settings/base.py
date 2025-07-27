@@ -166,7 +166,8 @@ class Settings(BaseSettings):
             raise RuntimeError(
                 "The private and public keys are not generated yet. Try to generate "
                 f"keys in the {private_key_path} path, using the command "
-                f"`ssh-keygen -t rsa -b 2048 -f {private_key_path}`\n"
+                f"`ssh-keygen -t rsa -b 2048 -f {private_key_path} "
+                "-N 'your-strong-passphrase'`.\n"
                 "Make sure that you set the correct passphrase for the files according "
                 "to the .env files.\n"
                 "You can read `docs/security/create_jwt_keys` for clear instructions."
@@ -223,7 +224,8 @@ class Settings(BaseSettings):
             raise RuntimeError(
                 "The private and public keys are not generated yet. Try to generate "
                 f"keys in the {public_key_path} path, using the command "
-                f"`ssh-keygen -t rsa -b 2048 -f {public_key_path}`\n"
+                f"`ssh-keygen -t rsa -b 2048 -f {public_key_path} "
+                "-N 'your-strong-passphrase'`.\n"
                 "Make sure that you set the correct passphrase for the files according "
                 "to the .env files.\n"
                 "You can read `docs/security/create_jwt_keys` for clear instructions."
