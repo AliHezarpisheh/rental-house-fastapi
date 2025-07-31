@@ -38,30 +38,15 @@ async def register(
     Register a new user with the provided details.
 
     This endpoint accepts user details such as email and password,
-    and creates a new user account. The created account will be inactive and
-    unverified. To activate and verify the account, the user must call the
-    `/users/{user_id}/verify` endpoint.
+    and creates a new user account.
 
+    ### Parameters
     - **email**: The email address of the user, which must be valid.
     - **password**: A secure password for the user account.
-    \f
-    Parameters
-    ----------
-    user_input : UserRegisterInputSchema
-        A Pydantic schema containing the user's registration data.
-    user_service : UserService
-        A service dependency for handling user operations.
 
-    Returns
-    -------
-    dict
-        A dictionary containing the status, message, documentation link,
-        and user data if registration is successful.
-
-    Notes
-    -----
-    This endpoint only registers the user. Verification is required
-    via the `/users/{user_id}/verify` endpoint.
+    ### Notes
+    The created account will be inactive and unverified. To activate and verify the
+    account, the user must call the `/users/register/verify` endpoint.
     """
     result = await user_service.register(user_input=user_input)
     return result
@@ -87,27 +72,11 @@ async def verify_user_registration(
     the user's account with the provided TOTP. Once verified, the user
     can access their account and associated services.
 
+    ### Parameters
     - **email**: The user's email address.
     - **totp**: A six-digit TOTP sent to the user's registered contact (e.g., email).
 
-    \f
-    Parameters
-    ----------
-    email : EmailStr
-        The email address of the user requesting verification.
-    totp : str
-        The Time-based One-Time Password (TOTP) provided by the user.
-    user_service : UserService
-        A service dependency for handling user verification operations.
-
-    Returns
-    -------
-    dict
-        A dictionary containing the status, message, and documentation link,
-        indicating the success or failure of the verification process.
-
-    Notes
-    -----
+    ### Notes
     - The TOTP must be valid and within the defined time window.
     - Users need to provide the exact TOTP sent to their registered contact.
     """
@@ -117,7 +86,7 @@ async def verify_user_registration(
 
 @router.post(
     "/authenticate",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     response_model=UserOutputSchema,
     response_model_exclude_none=True,
 )
@@ -133,27 +102,13 @@ async def authenticate(
     is accessible after verifying the auth, through sending the otp and verification of
     the otp.
 
+    ### Parameters
     - **email**: The email address of the user, which must be valid.
 
-    \f
-    Parameters
-    ----------
-    user_input : UserAuthenticateInputSchema
-        The input data containing the user's credentials.
-    user_service : UserService
-        A service dependency for performing user authentication.
-
-    Returns
-    -------
-    dict
-        A dictionary containing the authenticated user's data, along with
-        status, message, and optional documentation links.
-
-    Notes
-    -----
-    - The credentials are validated against stored user data.
-    - If authentication fails, an appropriate error message will be returned.
-    - Upon successful login, the user has to verify the auth through otp verification.
+    ### Notes
+    **The authentication process is incomplete here**. To retrieve the access token
+    required for accessing protected endpoints, the user must call the
+    `/users/authenticate/verify` endpoint.
     """
     result = await user_service.authenticate(user_input=user_input)
     return result
@@ -180,36 +135,19 @@ async def verify_login(
     One-Time Password (TOTP). Upon successful verification, it grants the user an
     access token for subsequent authenticated requests.
 
+    ### Parameters
     - **email**: The user's email address.
     - **totp**: A 6-digit TOTP used for verification.
 
-    \f
-    Parameters
-    ----------
-    email : EmailStr
-        The email address of the user requesting verification.
-    totp : str
-        The Time-based One-Time Password provided by the user.
-    user_service : UserService
-        Service used to perform authentication checks for the user.
-    token_service : TokenService
-        Service used to issue access tokens upon successful authentication.
-
-    Returns
-    -------
-    dict[str, str]
-        A dictionary containing:
-        - `access_token`: The access token for the user.
-        - `type`: The token type (e.g., "Bearer").
-
-    Notes
-    -----
-    - The `verify_authentication` method checks the email and TOTP against stored
-      user data and current OTP validity.
-    - The `grant_token` method generates an access token for the user upon successful
-      authentication.
-    - This endpoint is part of a multi-step authentication process and ensures that
-      only verified users are granted access tokens.
+    ### Notes
+    - The response includes two keys: `access_token` and `type` (e.g., `"Bearer"`).
+    - To authorize other endpoints in the Swagger UI:
+    1. Copy the `type` and `access_token` values from the response.
+    2. Combine them into a single string like: `Bearer eyJhbGciOiJI...`
+    3. Click the **Authorize** button at the top-right.
+    4. Paste the combined string into the input field and confirm.
+    - This allows the Swagger UI to include the JWT in the `Authorization` header for
+      secured endpoints.
     """
     user: User = await user_service.verify_authentication(email=email, totp=totp)
     token_data = token_service.grant_token(user=user)
